@@ -3,16 +3,36 @@
 Tous les commerces autour de toi sont déjà sur la carte. Ton travail : cliquer un commerce et lui
 donner un statut. Le suivi se construit tout seul, en carte et en tableau.
 
-## Lancer
+## Où l'utiliser
+
+**En ligne, ordinateur et téléphone : https://guillaumecohenmikula.github.io/myrmeo-prospection/**
+
+C'est l'adresse à mettre en favori sur ton téléphone pour les tournées. Publiée via GitHub Pages
+depuis le dépôt `guillaumecohenmikula/myrmeo-prospection` (gratuit, sans quota de déploiement).
+Pour mettre à jour : `git push`, la mise en ligne suit en une minute environ.
+
+En local, pour développer :
 
 ```bash
 cd projects/activite-services/prospection/carte && python3 -m http.server 8777
 ```
 
-Puis **http://localhost:8777**.
+> Passe par un serveur (local ou en ligne), jamais par un double-clic sur le fichier : en `file://`,
+> le navigateur bloque le chargement des commerces.
 
-> Passe par le serveur local, pas par un double-clic : en `file://`, le navigateur bloque le
-> chargement des commerces.
+## Synchroniser entre ordinateur et téléphone
+
+Sans connexion, ton pipeline reste **sur l'appareil courant**. Pour le retrouver partout, clique
+**Se connecter** dans l'en-tête (mêmes identifiants que Neve et le coach, projet Supabase « NEVE »).
+
+Le voyant dans l'en-tête indique l'état : hors ligne, enregistrement, synchronisé, erreur.
+
+À la première connexion, s'il y a des fiches en local et rien dans le cloud, l'app propose de les
+envoyer. Si les deux côtés ont des fiches, elles sont fusionnées en gardant la version **la plus
+récemment modifiée** de chacune.
+
+**Avant la première utilisation** : joue `supabase-schema.sql` dans l'éditeur SQL du projet Supabase
+« NEVE ». La table est préfixée `prosp_` et protégée par RLS privée, comme celles de Neve.
 
 ## Comment ça marche
 
@@ -95,8 +115,9 @@ l'ont atteinte au moins une fois, historique compris, donc les taux sont toujour
 
 ## Sauvegarde
 
-Tout vit dans le `localStorage` de ton navigateur. **Vider le cache du navigateur efface tout.**
-Utilise **Sauvegarder** régulièrement (fichier JSON) et **Restaurer** pour recharger.
+Non connecté, tout vit dans le `localStorage` du navigateur : **vider le cache efface tout**.
+Connecté, la base fait office de sauvegarde. Dans les deux cas, **Sauvegarder** exporte un fichier
+JSON et **Restaurer** le recharge.
 
 ## Limites à connaître
 
