@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Myrmeo — Carte de prospection</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{--ink:#1E3A64;--ink-soft:#3d5a85;--bg:#f7f6f3;--card:#fff;--line:#e3e0d9;--muted:#7c7a75;--rouge:#c8503f}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+  header{background:var(--ink);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:16px;font-weight:600}
+  header .spacer{flex:1}
+  header button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);
+    padding:6px 11px;border-radius:6px;cursor:pointer;font-size:12.5px}
+  header button:hover{background:rgba(255,255,255,.22)}
+  .tabs{display:flex;background:rgba(0,0,0,.22);border-radius:7px;padding:3px}
+  .tabs button{background:transparent;border:none;padding:6px 14px;border-radius:5px;position:relative}
+  .tabs button.on{background:#fff;color:var(--ink);font-weight:600}
+  .badge{background:var(--rouge);color:#fff;border-radius:10px;padding:0 5px;font-size:10px;
+    margin-left:5px;font-weight:700;vertical-align:middle}
+  .sync{font-size:11.5px;opacity:.75;display:flex;align-items:center;gap:5px}
+  .sync::before{content:'';width:7px;height:7px;border-radius:50%;background:#9a9a9a}
+  .sync.ok::before{background:#6ecf8e}
+  .sync.err::before{background:#f0a08e}
+
+  .modal{position:fixed;inset:0;background:rgba(20,30,50,.55);z-index:3000;
+    display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.on{display:flex}
+  .modal .box{background:#fff;border-radius:12px;padding:22px;max-width:340px;width:100%;
+    box-shadow:0 10px 40px rgba(0,0,0,.3)}
+  .modal h3{margin:0 0 4px;font-size:17px}
+  .modal p{margin:0 0 14px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .modal input{margin-bottom:9px}
+  .modal .primary{background:var(--ink);color:#fff;border:none;padding:10px;border-radius:6px;
+    cursor:pointer;font-size:14px;font-weight:500;width:100%}
+  .modal .lien{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;
+    width:100%;margin-top:9px;padding:4px}
+  .modal .msg{font-size:12px;margin-top:9px;min-height:16px}
+
+  .wrap{display:grid;grid-template-columns:345px 1fr;height:calc(100vh - 51px)}
+  /* Sur téléphone (usage en tournée) : la carte d'abord, le panneau en dessous. */
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr;height:auto}
+    .main{order:1}.panel{order:2;border-right:none;border-top:1px solid var(--line)}
+    #map,#tableView,#todayView{height:72vh}
+    header{padding:9px 12px;gap:8px}
+    header h1{font-size:14px}
+    .tabs button{padding:6px 11px;font-size:13px}
+    .stbtns{grid-template-columns:1fr}
+    .stbtn{font-size:12.5px;padding:8px}
+    .leaflet-popup-content{min-width:210px}
+    .pop .duo{grid-template-columns:1fr}
+  }
+  .panel{overflow-y:auto;border-right:1px solid var(--line);background:var(--card);padding:14px}
+  .main{position:relative;overflow:hidden}
+  #map{height:100%;z-index:1}
+  #tableView,#todayView{height:100%;overflow:auto;padding:16px;background:var(--bg);display:none}
+
+  h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 9px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
+  .stat{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
+  .stat b{display:block;font-size:19px;line-height:1.1}
+  .stat span{font-size:10.5px;color:var(--muted)}
+  .funnel{font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--line);
+    border-radius:8px;padding:10px;margin-bottom:14px;line-height:1.65}
+  .funnel b{color:var(--ink)}
+  .funnel .ligne{display:flex;justify-content:space-between;gap:8px}
+  .funnel .taux{font-size:10.5px;opacity:.75}
+  .bar{height:5px;border-radius:3px;background:#e8e5df;overflow:hidden;margin:2px 0 6px}
+  .bar i{display:block;height:100%}
+  .alerte-bloc{background:#fdeee9;border:1px solid #f0c4b8;color:var(--rouge);border-radius:7px;
+    padding:8px 10px;font-size:12px;margin-bottom:14px;cursor:pointer}
+  .alerte-bloc b{color:var(--rouge)}
+
+  .ctl{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:14px}
+  label{font-size:11.5px;color:var(--muted);display:block;margin-bottom:3px}
+  select,input,textarea{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;
+    font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+  .chkline{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12.5px;color:var(--ink)}
+  .chkline input{width:auto}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+  #search{margin-bottom:10px}
+
+  .filters{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px}
+  .chip{font-size:11px;padding:3px 8px;border-radius:20px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:4px}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+
+  .item{border:1px solid var(--line);border-left-width:4px;border-radius:7px;padding:8px 10px;
+    margin-bottom:6px;cursor:pointer;background:#fff}
+  .item:hover{background:var(--bg)}
+  .item .nom{font-weight:600;font-size:13.5px}
+  .item .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .tags{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
+  .tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg);
+    border:1px solid var(--line);color:var(--muted)}
+  .tag.alerte{background:#fdeee9;border-color:#f0c4b8;color:var(--rouge)}
+  .empty{color:var(--muted);font-size:12.5px;padding:14px 0;text-align:center}
+
+  .leaflet-popup-content{margin:12px 14px;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-width:250px}
+  .pop h3{margin:0 0 2px;font-size:15px;color:var(--ink)}
+  .pop .cat{color:var(--muted);font-size:12px;margin-bottom:6px}
+  .pop .info{font-size:12.5px;margin:2px 0}
+  .pop .sans{color:#c17a2b;font-weight:600}
+  .pop .sep{border-top:1px solid var(--line);margin:9px 0 8px}
+  .pop .lab{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:8px 0 4px}
+  .stbtns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .stbtn{font-size:11px;padding:5px 6px;border-radius:5px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;text-align:left;color:var(--ink);display:flex;align-items:center;gap:5px}
+  .stbtn:hover{background:var(--bg)}
+  .stbtn.on{color:#fff;font-weight:600;border-color:transparent}
+  .pop textarea{min-height:40px;resize:vertical;font-size:12.5px}
+  .pop .duo{display:grid;grid-template-columns:1fr 108px;gap:5px}
+  .pop .duo input{font-size:12.5px}
+  .pop .untag{font-size:11px;color:var(--rouge);cursor:pointer;background:none;border:none;padding:0;margin-top:8px}
+  .pop .hist{font-size:11px;color:var(--muted);margin-top:8px;max-height:76px;overflow-y:auto;
+    border-top:1px solid var(--line);padding-top:6px}
+  .pop .hist div{margin-bottom:2px}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+    border-radius:8px;overflow:hidden;font-size:12.5px}
+  th{background:var(--ink);color:#fff;text-align:left;padding:8px 9px;font-weight:600;
+    font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+  th:hover{background:var(--ink-soft)}
+  td{padding:7px 9px;border-top:1px solid var(--line);vertical-align:top}
+  tr:hover td{background:var(--bg)}
+  td.notes{max-width:210px;color:var(--muted);font-size:11.5px}
+  .pill{font-size:10px;padding:2px 7px;border-radius:20px;color:#fff;white-space:nowrap;display:inline-block}
+  .tblhead{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .tblhead h2{margin:0}
+  .tblhead .spacer{flex:1}
+  .tblhead button{font-size:12.5px;padding:6px 11px;border-radius:6px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;color:var(--ink)}
+
+  .jour{background:#fff;border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:8px;
+    padding:11px 13px;margin-bottom:8px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+  .jour:hover{background:var(--bg)}
+  .jour .g{flex:1}
+  .jour .nom{font-weight:600;font-size:14px}
+  .jour .act{font-size:13px;margin-top:3px}
+  .jour .meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .jour .quand{font-size:11.5px;white-space:nowrap;color:var(--muted)}
+  .jour.retard{border-left-color:var(--rouge)}
+  .jour.retard .quand{color:var(--rouge);font-weight:600}
+  .sect{font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    margin:18px 0 8px;font-weight:600}
+
+  #loader{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;
+    background:rgba(30,58,100,.94);color:#fff;padding:7px 15px;border-radius:20px;font-size:12.5px;
+    display:none;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  #loader.on{display:block}
+  .legende{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:8px;
+    padding:8px 10px;font-size:11px;line-height:1.7;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.12)}
+  .legende span{vertical-align:middle;margin-right:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Prospection Myrmeo</h1>
+  <div class="tabs">
+    <button id="tabToday">Aujourd'hui<span id="badgeToday"></span></button>
+    <button id="tabMap" class="on">Carte</button>
+    <button id="tabTable">Pipeline</button>
+  </div>
+  <span class="spacer"></span>
+  <span id="syncEtat" class="sync">Hors ligne</span>
+  <button id="btnSync">Se connecter</button>
+  <button id="btnExport">Sauvegarder</button>
+  <button id="btnImport">Restaurer</button>
+  <input type="file" id="fileImport" accept="application/json" hidden />
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <h2>Pipeline</h2>
+    <div class="stats" id="stats"></div>
+    <div id="alertes"></div>
+    <div class="funnel" id="funnel"></div>
+
+    <h2>Affichage de la carte</h2>
+    <div class="ctl">
+      <select id="cat">
+        <option value="tous" selected>Tous les types</option>
+        <option value="craft">Artisans (plombier, élec, menuisier…)</option>
+        <option value="shop">Commerces</option>
+        <option value="office">Bureaux et services</option>
+        <option value="sante">Santé (kiné, ostéo, véto…)</option>
+        <option value="resto">Restauration</option>
+      </select>
+      <div class="chkline"><input type="checkbox" id="chkSans" />
+        <label for="chkSans" style="margin:0">Seulement ceux sans site web</label></div>
+      <div class="chkline"><input type="checkbox" id="chkSuivi" />
+        <label for="chkSuivi" style="margin:0">Seulement mon pipeline</label></div>
+      <div class="hint">Les commerces se chargent tout seuls et restent en mémoire.
+        Clique un point pour le qualifier. <span id="cacheInfo"></span></div>
+    </div>
+
+    <h2>Mon pipeline</h2>
+    <input id="search" placeholder="Rechercher un nom, une rue…" />
+    <div class="filters" id="filters"></div>
+    <div id="liste"></div>
+  </div>
+
+  <div class="main">
+    <div id="map"></div>
+    <div id="loader">Chargement des commerces…</div>
+
+    <div id="todayView">
+      <div class="tblhead"><h2 id="todayTitre">Aujourd'hui</h2><span class="spacer"></span></div>
+      <div id="todayBox"></div>
+    </div>
+
+    <div id="tableView">
+      <div class="tblhead">
+        <h2 id="tblTitre">Pipeline</h2><span class="spacer"></span>
+        <button id="btnCsv">Exporter en CSV (Excel)</button>
+      </div>
+      <div id="tableBox"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalLogin">
+  <div class="box">
+    <h3>Synchroniser</h3>
+    <p>Connecte-toi pour retrouver ton pipeline sur tous tes appareils, ordinateur comme téléphone.
+       Sans connexion, tout reste sur cet appareil.</p>
+    <input id="mail" type="email" placeholder="Email" autocomplete="username" />
+    <input id="mdp" type="password" placeholder="Mot de passe" autocomplete="current-password" />
+    <button class="primary" id="btnLogin">Se connecter</button>
+    <div class="msg" id="msgLogin"></div>
+    <button class="lien" id="btnFermer">Continuer sans synchroniser</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CENTRE = [48.8215, 2.4136];
+const CLE = 'myrmeo_suivi_v3';
+const CACHE = 'myrmeo_pois_v2';
+const ZOOM_MINI = 15;
+
+/* Pipeline. "etape" = position dans le parcours ; -1 = sortie (hors entonnoir). */
+const STATUTS = {
+  a_qualifier: {label:'À qualifier',        hex:'#8d8d8d', etape:0},
+  a_contacter: {label:'À contacter',        hex:'#e08a3c', etape:1},
+  approche:    {label:'Approché',           hex:'#d0a24c', etape:2},
+  decouverte:  {label:'Découverte faite',   hex:'#3b7ea1', etape:3},
+  proposition: {label:'Proposition envoyée',hex:'#7a5aa8', etape:4},
+  gagne:       {label:'Gagné',              hex:'#3f8f5f', etape:5},
+  plus_tard:   {label:'Pas maintenant',     hex:'#9b8fb5', etape:-1},
+  ecarte:      {label:'Écarté',             hex:'#5c5651', etape:-1}
+};
+
+const MOTIFS = ['Pas le bon interlocuteur','Pas de besoin','Budget','Concurrent déjà en place',
+                'Hors cible (franchise, groupe)','Fermé / plus d\'activité','Sans réponse','Autre'];
+const SOURCES = ['Visite en direct','Téléphone','Recommandation','LinkedIn','Formulaire du site','Autre'];
+
+/* Anciens statuts (v1 et v2) remappés au chargement. */
+const MIGRATION = {
+  a_visiter:'a_qualifier', a_verifier:'a_qualifier', repasser:'a_contacter',
+  a_demarcher:'a_contacter', conversation:'decouverte', contacte:'approche',
+  rdv:'decouverte', devis_a_envoyer:'decouverte', devis_envoye:'proposition',
+  client:'gagne', refus:'ecarte', impossible:'ecarte'
+};
+
+let suivi = {}, pois = new Map(), zonesChargees = [];
+let filtre = 'tous', vue = 'carte', triCol = null, triAsc = true, recherche = '';
+
+/* ---------- carte ---------- */
+const map = L.map('map').setView(CENTRE, 16);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  {maxZoom:20, attribution:'&copy; OpenStreetMap, &copy; CARTO'}).addTo(map);
+const couche = L.layerGroup().addTo(map);
+
+const legende = L.control({position:'bottomleft'});
+legende.onAdd = () => {
+  const d = L.DomUtil.create('div','legende');
+  d.innerHTML = '<b style="color:#1E3A64">Légende</b><br>' +
+    '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#fff;border:1.5px solid #9a9a9a"></span> non traité<br>' +
+    Object.values(STATUTS).map(s =>
+      `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${s.hex}"></span> ${s.label}`).join('<br>');
+  return d;
+};
+legende.addTo(map);
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fdate = d => d ? d.split('-').reverse().slice(0,2).join('/') : '';
+const today = () => new Date().toISOString().slice(0,10);
+const st = e => STATUTS[e && e.statut] || STATUTS.a_qualifier;
+const entrees = () => Object.entries(suivi).map(([id,v]) => ({id, ...v}));
+const nb = s => entrees().filter(e => e.statut === s).length;
+const actif = e => st(e).etape >= 0;
+const echu = e => e.dateAction && e.dateAction <= today();
+/* Un prospect actif sans prochaine action datée est un prospect qui dort. */
+const dort = e => actif(e) && e.statut !== 'gagne' && !e.dateAction;
+
+/* ---------- stockage ---------- */
+function charger(){
+  try{ suivi = JSON.parse(localStorage.getItem(CLE)) || {}; }catch(e){ suivi = {}; }
+  if(!Object.keys(suivi).length){        // reprise d'une version precedente
+    try{
+      const vieux = JSON.parse(localStorage.getItem('myrmeo_suivi_v2') || '{}');
+      Object.entries(vieux).forEach(([k,v]) => suivi[k] = v);
+    }catch(e){}
+  }
+  let modif = false;
+  Object.values(suivi).forEach(e => {
+    if(!STATUTS[e.statut]){ e.statut = MIGRATION[e.statut] || 'a_qualifier'; modif = true; }
+    if(!e.hist){ e.hist = [{d: e.maj || today(), s: e.statut}]; modif = true; }
+    if(e.relance && !e.dateAction){ e.dateAction = e.relance; delete e.relance; modif = true; }
+  });
+  if(modif) sauver();
+}
+let pousseeTimer = null;
+/* sauver(false) : écrit en local sans repartir vers Supabase (utilisé après un tirage,
+   pour ne pas renvoyer aussitôt ce qu'on vient de recevoir). */
+function sauver(sync){
+  localStorage.setItem(CLE, JSON.stringify(suivi));
+  if(sync !== false && connecte){
+    clearTimeout(pousseeTimer);
+    majEtatSync('Enregistrement…');
+    pousseeTimer = setTimeout(pousser, 900);
+  }
+}
+
+function chargerCache(){
+  try{
+    const c = JSON.parse(localStorage.getItem(CACHE) || '{}');
+    (c.pois || []).forEach(p => pois.set(p.id, p));
+    zonesChargees = c.zones || [];
+  }catch(e){}
+}
+function sauverCache(){
+  try{ localStorage.setItem(CACHE, JSON.stringify({pois:[...pois.values()], zones:zonesChargees})); }
+  catch(e){}
+}
+
+/* ---------- Overpass ---------- */
+const SERVEURS = ['https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+const CATS_REQ = ['["craft"]','["shop"]','["office"]','["healthcare"]',
+  '["amenity"~"^(veterinary|doctors|dentist|pharmacy|restaurant|cafe|bar|fast_food|driving_school)$"]'];
+
+async function interrogerOverpass(q){
+  let derniere = null;
+  for(const url of SERVEURS){
+    const stop = new AbortController();
+    const t = setTimeout(() => stop.abort(), 25000);
+    try{
+      const r = await fetch(url, {method:'POST', body:'data=' + encodeURIComponent(q),
+        headers:{'Content-Type':'application/x-www-form-urlencoded'}, signal: stop.signal});
+      clearTimeout(t);
+      if(!r.ok){ derniere = new Error('HTTP ' + r.status); continue; }
+      const txt = await r.text();
+      /* Overpass sert parfois une page d'erreur XML AVEC un code 200 : inspecter le corps. */
+      if(txt.trimStart().startsWith('<')){
+        derniere = new Error(/too busy/i.test(txt) ? 'serveur saturé' : 'réponse invalide'); continue;
+      }
+      return JSON.parse(txt);
+    }catch(e){ clearTimeout(t); derniere = e; }
+  }
+  throw derniere || new Error('injoignable');
+}
+
+const bboxDe = b => [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()];
+const dejaCharge = b => zonesChargees.some(z =>
+  b[0] >= z[0] && b[1] >= z[1] && b[2] <= z[2] && b[3] <= z[3]);
+
+let timer = null, enCours = false;
+const planifierChargement = () => { clearTimeout(timer); timer = setTimeout(chargerZone, 700); };
+
+async function chargerZone(){
+  if(enCours || vue !== 'carte') return;
+  const load = document.getElementById('loader');
+  if(map.getZoom() < ZOOM_MINI){
+    load.textContent = 'Zoome pour voir les commerces'; load.classList.add('on');
+    setTimeout(() => load.classList.remove('on'), 1800); return;
+  }
+  const b = bboxDe(map.getBounds().pad(0.15));
+  /* Tant que le layout n'est pas calculé, getBounds() renvoie une zone plate (nord == sud). */
+  if(b[2] - b[0] < 0.0005 || b[3] - b[1] < 0.0005){
+    map.invalidateSize(); setTimeout(chargerZone, 400); return;
+  }
+  if(dejaCharge(b)) return;
+
+  const bb = b.join(',');
+  const q = `[out:json][timeout:30];(${CATS_REQ.map(f => `nwr${f}(${bb});`).join('')});out center tags;`;
+  enCours = true;
+  load.textContent = 'Chargement des commerces…'; load.classList.add('on');
+  try{
+    const j = await interrogerOverpass(q);
+    const SANTE = ['veterinary','doctors','dentist','pharmacy'];
+    const RESTO = ['restaurant','cafe','bar','fast_food'];
+    let n = 0;
+    (j.elements||[]).forEach(el => {
+      const t = el.tags; if(!t || !t.name) return;
+      const id = el.type + '/' + el.id; if(pois.has(id)) return;
+      const lat = el.lat ?? el.center?.lat, lon = el.lon ?? el.center?.lon; if(!lat) return;
+      pois.set(id, {id, nom:t.name,
+        cat: t.craft ? 'craft' : t.shop ? 'shop' : t.office ? 'office'
+             : (t.healthcare || SANTE.includes(t.amenity)) ? 'sante'
+             : RESTO.includes(t.amenity) ? 'resto' : 'autre',
+        type: t.craft || t.shop || t.office || t.amenity || t.healthcare || '',
+        adresse: [t['addr:housenumber'], t['addr:street'], t['addr:city']].filter(Boolean).join(' '),
+        tel: t.phone || t['contact:phone'] || '', web: t.website || t['contact:website'] || '',
+        lat, lon});
+      n++;
+    });
+    zonesChargees.push(b); sauverCache();
+    load.textContent = n ? `${n} commerces ajoutés (${pois.size} au total)` : 'Secteur déjà couvert';
+    setTimeout(() => load.classList.remove('on'), 1600);
+    majCacheInfo(); rendreCarte();
+  }catch(err){
+    load.innerHTML = (pois.size ? 'Serveurs OSM occupés, affichage du cache. ' : 'Serveurs OSM occupés. ')
+      + '<u style="cursor:pointer" id="retry">Réessayer</u>';
+    const r = document.getElementById('retry');
+    if(r) r.onclick = () => { load.classList.remove('on'); chargerZone(); };
+  }
+  enCours = false;
+}
+map.on('moveend zoomend', planifierChargement);
+
+/* ---------- filtres ---------- */
+function correspond(x){
+  if(!recherche) return true;
+  const q = recherche.toLowerCase();
+  return (x.nom||'').toLowerCase().includes(q) || (x.adresse||'').toLowerCase().includes(q)
+      || (x.type||'').toLowerCase().includes(q);
+}
+function visible(p){
+  const s = suivi[p.id];
+  const cat = document.getElementById('cat').value;
+  if(cat !== 'tous' && (p.cat || 'autre') !== cat) return false;
+  if(document.getElementById('chkSuivi').checked && !s) return false;
+  if(document.getElementById('chkSans').checked && p.web) return false;
+  if(filtre !== 'tous' && (!s || s.statut !== filtre)) return false;
+  return correspond(p);
+}
+
+/* ---------- rendu carte ---------- */
+function ajouterMarqueur(p, s){
+  const m = L.circleMarker([p.lat, p.lon], s
+    ? {radius:8, color:'#fff', weight:2, fillColor:st(s).hex, fillOpacity:1}
+    : {radius:5, color:'#9a9a9a', weight:1.5, fillColor:'#fff', fillOpacity:.9});
+  m.bindTooltip(p.nom, {direction:'top', offset:[0,-6]});
+  m.on('click', () => ouvrirPopup(p, m));
+  m.addTo(couche);
+}
+function rendreCarte(){
+  couche.clearLayers();
+  const liste = [...pois.values()].filter(visible);
+  liste.sort((a,b) => (suivi[a.id]?1:0) - (suivi[b.id]?1:0));
+  liste.forEach(p => ajouterMarqueur(p, suivi[p.id]));
+  entrees().filter(e => !pois.has(e.id) && e.lat)
+    .filter(e => (filtre === 'tous' || e.statut === filtre) && correspond(e))
+    .forEach(e => ajouterMarqueur(e, e));
+}
+
+/* ---------- popup ---------- */
+function ouvrirPopup(p, marker){
+  const s = suivi[p.id] || null;
+  const gmaps = 'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(p.nom + ' ' + (p.adresse || ''));
+
+  const html = `<div class="pop" data-id="${esc(p.id)}">
+    <h3>${esc(p.nom)}</h3>
+    <div class="cat">${esc(p.type || 'commerce')}</div>
+    ${p.adresse ? `<div class="info">${esc(p.adresse)}</div>` : ''}
+    ${p.tel ? `<div class="info">☎ <a href="tel:${esc(p.tel)}">${esc(p.tel)}</a></div>` : ''}
+    <div class="info">${p.web
+      ? `<a href="${esc(p.web.startsWith('http') ? p.web : 'https://' + p.web)}" target="_blank" rel="noopener">site web</a>`
+      : '<span class="sans">pas de site web</span>'}</div>
+    <div class="info"><a href="${gmaps}" target="_blank" rel="noopener">Voir sur Google Maps ↗</a></div>
+    <div class="sep"></div>
+
+    <div class="lab">Où on en est</div>
+    <div class="stbtns">
+      ${Object.entries(STATUTS).map(([k,v]) =>
+        `<button class="stbtn ${s && s.statut === k ? 'on' : ''}" data-st="${k}"
+          ${s && s.statut === k ? `style="background:${v.hex}"` : ''}>
+          <span class="dot" style="background:${v.hex}"></span>${v.label}</button>`).join('')}
+    </div>
+
+    <div class="lab">Prochaine action</div>
+    <div class="duo">
+      <input data-action value="${esc(s ? s.action || '' : '')}" placeholder="Repasser voir le patron" />
+      <input type="date" data-date value="${s && s.dateAction ? s.dateAction : ''}" />
+    </div>
+
+    ${s && s.statut === 'ecarte' ? `
+      <div class="lab">Motif</div>
+      <select data-motif>${['', ...MOTIFS].map(m =>
+        `<option ${s.motif === m ? 'selected' : ''}>${m}</option>`).join('')}</select>` : ''}
+
+    <div class="lab">Source</div>
+    <select data-source>${['', ...SOURCES].map(x =>
+      `<option ${s && s.source === x ? 'selected' : ''}>${x}</option>`).join('')}</select>
+
+    ${s && s.statut === 'gagne' ? `
+      <div class="lab">Type de mission</div>
+      <select data-type>${['Pilote gratuit','Payant'].map(x =>
+        `<option ${s.typeMission === x ? 'selected' : ''}>${x}</option>`).join('')}</select>` : ''}
+
+    <div class="lab">Notes</div>
+    <textarea data-notes placeholder="Agenda papier sur le comptoir, patron absent…">${esc(s ? s.notes || '' : '')}</textarea>
+
+    ${s && s.hist && s.hist.length ? `<div class="hist">${s.hist.slice(-6).reverse().map(h =>
+      `<div>${fdate(h.d)} · ${esc(STATUTS[h.s] ? STATUTS[h.s].label : h.s)}</div>`).join('')}</div>` : ''}
+    ${s ? '<button class="untag" data-untag>Retirer du pipeline</button>' : ''}
+  </div>`;
+
+  marker.unbindPopup();
+  marker.bindPopup(html, {minWidth:265}).openPopup();
+}
+
+function lirePopup(pop){
+  const g = sel => { const el = pop.querySelector(sel); return el ? el.value.trim() : ''; };
+  return {action:g('[data-action]'), dateAction:g('[data-date]'), notes:g('[data-notes]'),
+          source:g('[data-source]'), motif:g('[data-motif]'), typeMission:g('[data-type]')};
+}
+
+document.addEventListener('click', ev => {
+  const pop = ev.target.closest('.pop'); if(!pop) return;
+  const id = pop.dataset.id;
+  const p = pois.get(id) || (suivi[id] ? {...suivi[id], id} : null); if(!p) return;
+
+  const btn = ev.target.closest('.stbtn');
+  if(btn){
+    const champs = lirePopup(pop);
+    const ancien = suivi[id];
+    const hist = (ancien && ancien.hist) ? [...ancien.hist] : [];
+    if(!ancien || ancien.statut !== btn.dataset.st) hist.push({d: today(), s: btn.dataset.st});
+    suivi[id] = {...(ancien||{}), ...champs, statut: btn.dataset.st,
+      nom:p.nom, type:p.type, adresse:p.adresse, tel:p.tel, web:p.web,
+      lat:p.lat, lon:p.lon, hist, maj: today()};
+    sauver(); rendre();
+    /* Rouvrir la fiche : les champs conditionnels (motif, type) dépendent du statut choisi. */
+    const m = couche.getLayers().find(l => Math.abs(l.getLatLng().lat - p.lat) < 1e-9);
+    if(m) ouvrirPopup(pois.get(id) || {...suivi[id], id}, m); else map.closePopup();
+    return;
+  }
+  if(ev.target.matches('[data-untag]')){ delete suivi[id]; sauver(); rendre(); map.closePopup(); }
+});
+
+document.addEventListener('change', ev => {
+  const pop = ev.target.closest('.pop'); if(!pop) return;
+  const id = pop.dataset.id; if(!suivi[id]) return;
+  Object.assign(suivi[id], lirePopup(pop));
+  sauver(); rendre();
+});
+
+/* ---------- panneau ---------- */
+function rendreStats(){
+  const tot = entrees().filter(actif).length;
+  const dec = nb('decouverte') + nb('proposition') + nb('gagne');
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>${tot}</b><span>en cours</span></div>
+    <div class="stat"><b>${dec}</b><span>découvertes</span></div>
+    <div class="stat"><b>${nb('gagne')}</b><span>gagnés</span></div>`;
+
+  const aFaire = entrees().filter(e => actif(e) && echu(e)).length;
+  const dorment = entrees().filter(dort).length;
+  const reactiver = entrees().filter(e => e.statut === 'plus_tard' && echu(e)).length;
+  const al = [];
+  if(aFaire) al.push(`<b>${aFaire}</b> action${aFaire>1?'s':''} à faire`);
+  if(reactiver) al.push(`<b>${reactiver}</b> à réactiver`);
+  if(dorment) al.push(`<b>${dorment}</b> sans prochaine action`);
+  document.getElementById('alertes').innerHTML = al.length
+    ? `<div class="alerte-bloc" id="goToday">⚑ ${al.join(' · ')}<br>
+       <span style="font-size:11px;opacity:.85">Voir l'onglet Aujourd'hui</span></div>` : '';
+  const g = document.getElementById('goToday');
+  if(g) g.onclick = () => montrerVue('today');
+
+  /* Un entonnoir se compte en "a atteint au moins cette étape", jamais sur le statut courant :
+     sinon un prospect passé en Gagné disparaît de Découvertes et les taux dépassent 100%.
+     L'historique donne la vraie réponse, y compris pour ceux sortis en cours de route. */
+  const aAtteint = (e, n) => st(e).etape >= n ||
+    (e.hist || []).some(h => (STATUTS[h.s] ? STATUTS[h.s].etape : -1) >= n);
+  const compte = n => entrees().filter(e => aAtteint(e, n)).length;
+  const etapes = [
+    ['À contacter', compte(1)], ['Approchés', compte(2)], ['Découvertes', compte(3)],
+    ['Propositions', compte(4)], ['Gagnés', compte(5)]
+  ];
+  const base = Math.max(etapes[0][1], 1);
+  document.getElementById('funnel').innerHTML = etapes.map(([l,v],i) => {
+    const prec = i ? etapes[i-1][1] : null;
+    const taux = prec ? Math.round(v/Math.max(prec,1)*100) + '%' : '';
+    const col = ['#e08a3c','#d0a24c','#3b7ea1','#7a5aa8','#3f8f5f'][i];
+    return `<div class="ligne"><span>${l} <b>${v}</b></span>
+      ${taux ? `<span class="taux">${taux} de l'étape avant</span>` : ''}</div>
+      <div class="bar"><i style="width:${Math.min(Math.round(v/base*100),100)}%;background:${col}"></i></div>`;
+  }).join('') + `<div style="margin-top:4px;font-size:11px">
+      Pas maintenant <b>${nb('plus_tard')}</b> · Écartés <b>${nb('ecarte')}</b></div>`;
+
+  document.getElementById('badgeToday').innerHTML =
+    (aFaire + reactiver) ? `<span class="badge">${aFaire + reactiver}</span>` : '';
+}
+
+function rendreFiltres(){
+  document.getElementById('filters').innerHTML =
+    ['tous', ...Object.keys(STATUTS)].map(k => {
+      const n = k === 'tous' ? entrees().length : nb(k);
+      const lab = k === 'tous' ? 'Tous' : STATUTS[k].label;
+      const dot = k === 'tous' ? '' : `<span class="dot" style="background:${STATUTS[k].hex}"></span>`;
+      return `<span class="chip ${filtre===k?'on':''}" data-f="${k}">${dot}${lab} ${n}</span>`;
+    }).join('');
+  document.querySelectorAll('.chip').forEach(c =>
+    c.onclick = () => { filtre = c.dataset.f; rendre(); });
+}
+
+const filtrees = () => (filtre === 'tous' ? entrees() : entrees().filter(e => e.statut === filtre))
+  .filter(correspond);
+
+function rendreListe(){
+  const v = filtrees(), box = document.getElementById('liste');
+  if(!v.length){
+    box.innerHTML = '<div class="empty">Rien ici.<br>Clique un commerce sur la carte pour le qualifier.</div>';
+    return;
+  }
+  box.innerHTML = v.sort((a,b) => st(b).etape - st(a).etape).map(e => `
+    <div class="item" style="border-left-color:${st(e).hex}" data-id="${esc(e.id)}">
+      <div class="nom">${esc(e.nom)}</div>
+      <div class="meta">${esc(e.type||'')}${e.type&&e.adresse?' · ':''}${esc(e.adresse||'')}</div>
+      <div class="tags">
+        <span class="tag" style="color:${st(e).hex};border-color:${st(e).hex}55">${st(e).label}</span>
+        ${!e.web ? '<span class="tag" style="color:#c17a2b;border-color:#e0c9a8">Pas de site</span>' : ''}
+        ${e.dateAction ? `<span class="tag ${echu(e)?'alerte':''}">${esc(e.action||'Action')} ${fdate(e.dateAction)}</span>`
+          : (dort(e) ? '<span class="tag alerte">Sans prochaine action</span>' : '')}
+      </div>
+      ${e.notes ? `<div class="meta" style="margin-top:5px">${esc(e.notes)}</div>` : ''}
+    </div>`).join('');
+  box.querySelectorAll('.item').forEach(el => el.onclick = () => ouvrirDepuisListe(el.dataset.id));
+}
+
+function ouvrirDepuisListe(id){
+  const e = suivi[id]; if(!e || !e.lat) return;
+  montrerVue('carte'); map.setView([e.lat, e.lon], 18);
+  setTimeout(() => {
+    let m = couche.getLayers().find(l => Math.abs(l.getLatLng().lat - e.lat) < 1e-9);
+    if(!m){ m = L.circleMarker([e.lat, e.lon], {radius:8, color:'#fff', weight:2,
+      fillColor:st(e).hex, fillOpacity:1}).addTo(couche); }
+    ouvrirPopup(pois.get(id) || {...e, id}, m);
+  }, 350);
+}
+
+/* ---------- vue Aujourd'hui ---------- */
+function rendreToday(){
+  const tous = entrees();
+  const enRetard = tous.filter(e => actif(e) && echu(e))
+    .sort((a,b) => (a.dateAction||'').localeCompare(b.dateAction||''));
+  const reactiver = tous.filter(e => e.statut === 'plus_tard' && echu(e));
+  const dorment = tous.filter(dort);
+  const aVenir = tous.filter(e => actif(e) && e.dateAction && e.dateAction > today())
+    .sort((a,b) => a.dateAction.localeCompare(b.dateAction)).slice(0, 10);
+
+  const bloc = (e, retard) => `
+    <div class="jour ${retard?'retard':''}" data-id="${esc(e.id)}">
+      <div class="g">
+        <div class="nom">${esc(e.nom)}</div>
+        <div class="act">${esc(e.action || 'Pas d\'action définie')}</div>
+        <div class="meta">${esc(st(e).label)}${e.adresse ? ' · ' + esc(e.adresse) : ''}${
+          e.tel ? ' · ☎ ' + esc(e.tel) : ''}</div>
+      </div>
+      <div class="quand">${e.dateAction ? fdate(e.dateAction) : '—'}</div>
+    </div>`;
+
+  const parts = [`<div class="sect">À faire maintenant (${enRetard.length})</div>`,
+    enRetard.length ? enRetard.map(e => bloc(e, true)).join('')
+                    : '<div class="empty">Rien en retard. Bien joué.</div>'];
+  if(reactiver.length){
+    parts.push(`<div class="sect">À réactiver (${reactiver.length})</div>`,
+               reactiver.map(e => bloc(e, true)).join(''));
+  }
+  if(dorment.length){
+    parts.push(`<div class="sect">Sans prochaine action (${dorment.length})</div>`,
+      '<div class="hint" style="margin:-4px 0 8px">Un prospect actif sans date est un prospect qui dort. Donne-lui une action, ou écarte-le.</div>',
+      dorment.map(e => bloc(e, false)).join(''));
+  }
+  if(aVenir.length){
+    parts.push('<div class="sect">À venir</div>', aVenir.map(e => bloc(e, false)).join(''));
+  }
+  document.getElementById('todayBox').innerHTML = parts.join('');
+  document.getElementById('todayTitre').textContent =
+    'Aujourd\'hui · ' + (enRetard.length + reactiver.length) + ' à traiter';
+  document.querySelectorAll('.jour').forEach(el =>
+    el.onclick = () => ouvrirDepuisListe(el.dataset.id));
+}
+
+/* ---------- tableau ---------- */
+const COLS = [['nom','Nom'],['type','Activité'],['adresse','Adresse'],['tel','Téléphone'],
+  ['web','Site'],['statut','Statut'],['action','Prochaine action'],['dateAction','Pour le'],
+  ['source','Source'],['motif','Motif'],['notes','Notes'],['maj','Modifié']];
+
+function rendreTableau(){
+  let v = [...filtrees()];
+  if(triCol) v.sort((a,b) => {
+    let x = a[triCol] ?? '', y = b[triCol] ?? '';
+    if(triCol === 'statut'){ x = st(a).etape; y = st(b).etape; }
+    return (x > y ? 1 : x < y ? -1 : 0) * (triAsc ? 1 : -1);
+  });
+  document.getElementById('tblTitre').textContent =
+    'Pipeline · ' + v.length + (v.length > 1 ? ' commerces' : ' commerce');
+  if(!v.length){
+    document.getElementById('tableBox').innerHTML =
+      '<div class="empty">Rien ici. Qualifie des commerces depuis la carte.</div>'; return;
+  }
+  document.getElementById('tableBox').innerHTML = `<table>
+    <thead><tr>${COLS.map(([k,l]) =>
+      `<th data-c="${k}">${l}${triCol===k?(triAsc?' ▲':' ▼'):''}</th>`).join('')}</tr></thead>
+    <tbody>${v.map(e => `<tr data-id="${esc(e.id)}" style="cursor:pointer">
+      <td><b>${esc(e.nom)}</b></td>
+      <td>${esc(e.type||'')}</td>
+      <td>${esc(e.adresse||'')}</td>
+      <td style="white-space:nowrap">${e.tel ? `<a href="tel:${esc(e.tel)}" style="color:var(--ink)">${esc(e.tel)}</a>` : '—'}</td>
+      <td>${e.web ? `<a href="${esc(e.web.startsWith('http')?e.web:'https://'+e.web)}" target="_blank" rel="noopener" style="color:var(--ink-soft)">site</a>`
+                  : '<span style="color:#c17a2b;font-weight:600">aucun</span>'}</td>
+      <td><span class="pill" style="background:${st(e).hex}">${st(e).label}</span></td>
+      <td>${esc(e.action||'')}</td>
+      <td${echu(e)&&actif(e)?' style="color:var(--rouge);font-weight:600"':''}>${fdate(e.dateAction)}</td>
+      <td>${esc(e.source||'')}</td>
+      <td>${esc(e.motif||'')}</td>
+      <td class="notes">${esc(e.notes||'')}</td>
+      <td style="color:var(--muted);font-size:11px">${fdate(e.maj)}</td>
+    </tr>`).join('')}</tbody></table>`;
+
+  document.querySelectorAll('th[data-c]').forEach(th => th.onclick = () => {
+    const c = th.dataset.c;
+    if(triCol === c) triAsc = !triAsc; else { triCol = c; triAsc = true; }
+    rendreTableau();
+  });
+  document.querySelectorAll('#tableBox tbody tr').forEach(tr =>
+    tr.onclick = ev => { if(ev.target.tagName !== 'A') ouvrirDepuisListe(tr.dataset.id); });
+}
+
+function majCacheInfo(){
+  const el = document.getElementById('cacheInfo');
+  if(el) el.innerHTML = pois.size
+    ? `<br><b>${pois.size}</b> commerces en mémoire. <u style="cursor:pointer" id="vider">Vider</u>` : '';
+  const v = document.getElementById('vider');
+  if(v) v.onclick = () => {
+    if(!confirm('Vider les commerces chargés ? Ton pipeline est conservé.')) return;
+    pois.clear(); zonesChargees = []; localStorage.removeItem(CACHE);
+    rendre(); majCacheInfo(); chargerZone();
+  };
+}
+
+function rendre(){ rendreStats(); rendreFiltres(); rendreListe(); rendreCarte();
+                   rendreTableau(); rendreToday(); }
+
+/* ---------- vues ---------- */
+function montrerVue(v){
+  vue = v;
+  document.getElementById('map').style.display = v === 'carte' ? '' : 'none';
+  document.getElementById('loader').style.display = v === 'carte' ? '' : 'none';
+  document.getElementById('tableView').style.display = v === 'tableau' ? 'block' : 'none';
+  document.getElementById('todayView').style.display = v === 'today' ? 'block' : 'none';
+  document.getElementById('tabMap').classList.toggle('on', v === 'carte');
+  document.getElementById('tabTable').classList.toggle('on', v === 'tableau');
+  document.getElementById('tabToday').classList.toggle('on', v === 'today');
+  if(v === 'carte') setTimeout(() => { map.invalidateSize(); chargerZone(); }, 50);
+}
+document.getElementById('tabMap').onclick = () => montrerVue('carte');
+document.getElementById('tabTable').onclick = () => montrerVue('tableau');
+document.getElementById('tabToday').onclick = () => montrerVue('today');
+
+document.getElementById('cat').onchange = rendreCarte;
+document.getElementById('chkSans').onchange = rendreCarte;
+document.getElementById('chkSuivi').onchange = rendreCarte;
+document.getElementById('search').oninput = e => { recherche = e.target.value.trim(); rendre(); };
+
+/* ---------- sauvegarde / csv ---------- */
+function telecharger(c, n, t){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([c], {type:t})); a.download = n; a.click();
+}
+document.getElementById('btnExport').onclick = () =>
+  telecharger(JSON.stringify(suivi, null, 2), 'pipeline-myrmeo-' + today() + '.json', 'application/json');
+
+document.getElementById('btnCsv').onclick = () => {
+  const l = [COLS.map(c => c[1]).join(';')];
+  filtrees().forEach(e => l.push(COLS.map(([k]) =>
+    '"' + String(k === 'statut' ? st(e).label : (e[k] ?? '')).replace(/"/g,'""') + '"').join(';')));
+  telecharger('﻿' + l.join('\r\n'), 'pipeline-myrmeo-' + today() + '.csv', 'text/csv;charset=utf-8');
+};
+document.getElementById('btnImport').onclick = () => document.getElementById('fileImport').click();
+document.getElementById('fileImport').onchange = ev => {
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const j = JSON.parse(r.result);
+      if(typeof j !== 'object' || Array.isArray(j)) throw 0;
+      if(confirm('Remplacer ton pipeline actuel (' + entrees().length + ') par celui du fichier ('
+                 + Object.keys(j).length + ') ?')){
+        suivi = j; sauver(); charger(); rendre();
+      }
+    }catch(e){ alert('Fichier illisible.'); }
+  };
+  r.readAsText(f); ev.target.value = '';
+};
+
+/* ================= Synchronisation Supabase =================
+   Le pipeline vit en localStorage par défaut : l'app marche sans connexion.
+   Une fois connecté, Supabase devient la source de vérité et le local sert de cache,
+   ce qui permet de retrouver son pipeline sur le téléphone en tournée.
+   Projet « NEVE » (partagé avec Neve et le coach), table préfixée prosp_.
+   La clé ci-dessous est la clé publique (publishable) : elle est faite pour vivre
+   dans le front, la sécurité repose sur les policies RLS. */
+const SB_URL  = 'https://yqkjiqakrohwjaepnqil.supabase.co';
+const SB_ANON = 'sb_publishable_EhTIXa6eFpFy5zxXGhC9Rw_Yg7jQRgB';
+const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_ANON) : null;
+let connecte = false, syncEnCours = false;
+
+const versLigne = (id, e) => ({
+  id, nom:e.nom||null, type:e.type||null, adresse:e.adresse||null, tel:e.tel||null, web:e.web||null,
+  lat:e.lat??null, lon:e.lon??null, statut:e.statut||'a_qualifier',
+  action:e.action||null, date_action:e.dateAction||null, source:e.source||null,
+  motif:e.motif||null, type_mission:e.typeMission||null, notes:e.notes||null,
+  hist:e.hist||[], maj:e.maj||today(), updated_at:new Date().toISOString()
+});
+const versFiche = r => ({
+  nom:r.nom||'', type:r.type||'', adresse:r.adresse||'', tel:r.tel||'', web:r.web||'',
+  lat:r.lat, lon:r.lon, statut:r.statut, action:r.action||'', dateAction:r.date_action||'',
+  source:r.source||'', motif:r.motif||'', typeMission:r.type_mission||'',
+  notes:r.notes||'', hist:r.hist||[], maj:r.maj||''
+});
+
+function majEtatSync(txt, cls){
+  const el = document.getElementById('syncEtat');
+  el.textContent = txt; el.className = 'sync' + (cls ? ' ' + cls : '');
+  document.getElementById('btnSync').textContent = connecte ? 'Déconnecter' : 'Se connecter';
+}
+
+async function pousser(){
+  if(!connecte || !sb || syncEnCours) return;
+  syncEnCours = true;
+  try{
+    const lignes = Object.entries(suivi).map(([id,e]) => versLigne(id, e));
+    if(lignes.length){
+      const {error} = await sb.from('prosp_suivi').upsert(lignes, {onConflict:'user_id,id'});
+      if(error) throw error;
+    }
+    /* Supprimer côté base ce qui a été retiré du pipeline en local. */
+    const {data} = await sb.from('prosp_suivi').select('id');
+    const aSupprimer = (data||[]).map(r => r.id).filter(id => !suivi[id]);
+    if(aSupprimer.length) await sb.from('prosp_suivi').delete().in('id', aSupprimer);
+    majEtatSync('Synchronisé', 'ok');
+  }catch(e){ majEtatSync('Erreur de synchro', 'err'); }
+  syncEnCours = false;
+}
+
+async function tirer(){
+  if(!connecte || !sb) return;
+  try{
+    const {data, error} = await sb.from('prosp_suivi').select('*');
+    if(error) throw error;
+    const distant = {};
+    (data||[]).forEach(r => distant[r.id] = versFiche(r));
+    const nLocal = Object.keys(suivi).length, nDistant = Object.keys(distant).length;
+
+    if(nLocal && !nDistant){
+      if(confirm(`Envoyer tes ${nLocal} fiches locales vers ton compte ?`)) { await pousser(); return; }
+    }
+    if(nLocal && nDistant){
+      /* Fusion : la fiche la plus récemment modifiée gagne. */
+      Object.entries(distant).forEach(([id,d]) => {
+        const l = suivi[id];
+        if(!l || (d.maj || '') >= (l.maj || '')) suivi[id] = d;
+      });
+    } else if(nDistant){
+      suivi = distant;
+    }
+    sauver(false); charger(); rendre();
+    majEtatSync('Synchronisé', 'ok');
+    if(nLocal && nDistant) pousser();
+  }catch(e){ majEtatSync('Erreur de synchro', 'err'); }
+}
+
+async function initSession(){
+  if(!sb){ majEtatSync('Hors ligne'); return; }
+  const {data} = await sb.auth.getSession();
+  if(data && data.session){ connecte = true; majEtatSync('Connexion…'); await tirer(); }
+  else majEtatSync('Hors ligne');
+}
+
+document.getElementById('btnSync').onclick = async () => {
+  if(connecte){
+    await sb.auth.signOut(); connecte = false; majEtatSync('Hors ligne');
+  } else {
+    document.getElementById('modalLogin').classList.add('on');
+    document.getElementById('mail').focus();
+  }
+};
+document.getElementById('btnFermer').onclick = () =>
+  document.getElementById('modalLogin').classList.remove('on');
+
+document.getElementById('btnLogin').onclick = async () => {
+  const msg = document.getElementById('msgLogin');
+  if(!sb){ msg.textContent = 'Client Supabase non chargé.'; return; }
+  msg.style.color = 'var(--muted)'; msg.textContent = 'Connexion…';
+  const {error} = await sb.auth.signInWithPassword({
+    email: document.getElementById('mail').value.trim(),
+    password: document.getElementById('mdp').value
+  });
+  if(error){ msg.style.color = 'var(--rouge)'; msg.textContent = 'Échec : ' + error.message; return; }
+  connecte = true;
+  document.getElementById('modalLogin').classList.remove('on');
+  document.getElementById('mdp').value = '';
+  majEtatSync('Connexion…'); await tirer();
+};
+document.getElementById('mdp').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('btnLogin').click();
+});
+
+/* ---------- init ---------- */
+charger();
+chargerCache();
+rendre();
+majCacheInfo();
+majEtatSync('Hors ligne');
+map.whenReady(() => { map.invalidateSize(); setTimeout(chargerZone, 250); });
+initSession();
+</script>
+</body>
+</html>
