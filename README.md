@@ -111,7 +111,8 @@ l'ont atteinte au moins une fois, historique compris, donc les taux sont toujour
 
 - **Commerces affichés** : artisans, commerces, bureaux, santé, restauration. Filtre l'affichage
   sans rien recharger.
-- **Seulement ceux sans site web** : c'est ton signal d'achat le plus fort pour le pilier web.
+- **Seulement ceux sans site connu** : à lire avec la nuance ci-dessous, OpenStreetMap ne renseigne
+  le site que d'environ un commerce sur quatre. Ta vérification manuelle prime sur la donnée OSM.
 - **Seulement mon suivi** : masque tout le reste pour y voir clair.
 - Les pastilles de statut filtrent la carte et le tableau en même temps.
 - La recherche en haut du pipeline cherche dans les noms, les rues et les activités.
@@ -124,9 +125,15 @@ JSON et **Restaurer** le recharge.
 
 ## Limites à connaître
 
-- **Les données viennent d'OpenStreetMap, pas de Google.** La couverture des commerces est bonne mais
-  pas parfaite. Surtout : **l'absence de site web dans OSM ne prouve pas qu'il n'y en a pas**, c'est
-  un indice à vérifier avant d'attaquer un commerce là-dessus.
+- **Les données viennent d'OpenStreetMap, pas de Google.** La couverture des commerces est bonne,
+  celle des sites web est faible : **mesuré à Charenton, seuls 35 commerces sur 145 (24%) ont un site
+  renseigné**, 28% en comptant les pages Facebook et Instagram. Autrement dit, **l'absence de site
+  dans OSM ne prouve rien du tout.**
+
+  C'est pour ça que la fiche affiche « site non renseigné » et non « pas de site », et qu'elle te
+  propose deux boutons, **Pas de site** et **A un site**. Le lien Google Maps de la fiche te permet
+  de trancher en deux clics. **Ta vérification prime ensuite sur la donnée OSM**, dans la fiche, dans
+  le filtre et dans le tableau. Tant que tu n'as pas tranché, la colonne Site affiche « à vérifier ».
 - **Les serveurs OpenStreetMap sont publics et parfois saturés.** Si le message « Serveurs OSM
   occupés » apparaît, clique Réessayer ou reviens quelques minutes plus tard. Trois serveurs sont
   essayés l'un après l'autre, et ce qui est déjà en mémoire reste affiché.

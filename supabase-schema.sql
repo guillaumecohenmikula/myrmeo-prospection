@@ -44,3 +44,9 @@ create policy "prosp delete" on prosp_suivi for delete using (auth.uid() = user_
 
 -- Recherche des actions échues (l'onglet Aujourd'hui).
 create index if not exists prosp_suivi_action_idx on prosp_suivi (user_id, date_action);
+
+-- Ajout du 2026-08-02 : vérification manuelle de la présence d'un site web.
+-- OpenStreetMap ne renseigne le site que pour environ un commerce sur quatre (mesuré à
+-- Charenton : 35 sur 145), donc l'absence de tag ne prouve rien. Ce champ porte le constat
+-- de terrain, qui prime sur la donnée OSM. Valeurs : 'oui', 'non', ou vide (pas encore vérifié).
+alter table prosp_suivi add column if not exists site_ok text;
