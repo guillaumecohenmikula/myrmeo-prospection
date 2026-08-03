@@ -89,6 +89,15 @@ produit vraiment, donc où remettre tes heures.
 Sur un Gagné, un champ **type de mission** distingue pilote gratuit et payant : ne confonds pas
 activité et revenu.
 
+## Se déplacer sur la carte
+
+**La barre de recherche en haut de la carte** t'emmène où tu veux : une ville, une rue, un code
+postal. Tape et valide, choisis dans la liste, la carte se cale sur le secteur et les commerces se
+chargent tout seuls. Utile pour préparer une tournée dans un quartier que tu ne connais pas encore.
+
+**Le bouton ◎ te localise.** En tournée, tu l'utilises pour voir ce qu'il y a autour de toi et
+qualifier sur place. Le navigateur te demandera l'autorisation la première fois.
+
 ## Les trois onglets
 
 **Aujourd'hui** : ta liste de travail. Ce qui est échu, ce qui est à réactiver, ce qui dort. Le badge
