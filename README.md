@@ -23,7 +23,9 @@ cd projects/activite-services/prospection/carte && python3 -m http.server 8777
 ## Synchroniser entre ordinateur et téléphone
 
 Sans connexion, ton pipeline reste **sur l'appareil courant**. Pour le retrouver partout, clique
-**Se connecter** dans l'en-tête (mêmes identifiants que Neve et le coach, projet Supabase « NEVE »).
+**Se connecter** dans l'en-tête, avec les identifiants de ton **projet Supabase « cockpit »**, qui
+devient ta base personnelle de gestion d'entreprise (prospects aujourd'hui, clients et devis
+demain). Volontairement séparé du projet NEVE, qui appartient à l'atelier de ta belle-mère.
 
 Le voyant dans l'en-tête indique l'état : hors ligne, enregistrement, synchronisé, erreur.
 
@@ -31,8 +33,9 @@ Le voyant dans l'en-tête indique l'état : hors ligne, enregistrement, synchron
 envoyer. Si les deux côtés ont des fiches, elles sont fusionnées en gardant la version **la plus
 récemment modifiée** de chacune.
 
-**Avant la première utilisation** : joue `supabase-schema.sql` dans l'éditeur SQL du projet Supabase
-« NEVE ». La table est préfixée `prosp_` et protégée par RLS privée, comme celles de Neve.
+**Avant la première utilisation** : joue `supabase-schema.sql` dans l'éditeur SQL du projet
+« cockpit ». La table est préfixée `prosp_`, protégée par RLS privée, et cohabite avec les tables
+existantes du cockpit sans y toucher.
 
 ## Comment ça marche
 

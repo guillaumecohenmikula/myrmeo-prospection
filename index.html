@@ -813,11 +813,14 @@ document.getElementById('fileImport').onchange = ev => {
    Le pipeline vit en localStorage par défaut : l'app marche sans connexion.
    Une fois connecté, Supabase devient la source de vérité et le local sert de cache,
    ce qui permet de retrouver son pipeline sur le téléphone en tournée.
-   Projet « NEVE » (partagé avec Neve et le coach), table préfixée prosp_.
+   Projet « cockpit » : la base personnelle de Guil (données d'apprentissage fictives),
+   volontairement séparée du projet NEVE qui appartient à l'atelier de sa belle-mère.
+   Les tables du cockpit (audits, documents, constats, commentaires) cohabitent, ne pas y toucher :
+   la démo en ligne du cockpit s'en sert encore.
    La clé ci-dessous est la clé publique (publishable) : elle est faite pour vivre
    dans le front, la sécurité repose sur les policies RLS. */
-const SB_URL  = 'https://yqkjiqakrohwjaepnqil.supabase.co';
-const SB_ANON = 'sb_publishable_EhTIXa6eFpFy5zxXGhC9Rw_Yg7jQRgB';
+const SB_URL  = 'https://glimlqyclhfzpdvsnulb.supabase.co';
+const SB_ANON = 'sb_publishable_eZgQD9gNy1TrZ9mILrQD0g_KpqD-Xy6';
 const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_ANON) : null;
 let connecte = false, syncEnCours = false;
 

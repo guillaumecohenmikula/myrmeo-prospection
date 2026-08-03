@@ -1,6 +1,10 @@
 -- Carte de prospection Myrmeo : table de suivi
--- À jouer une seule fois dans l'éditeur SQL du projet Supabase « NEVE »
--- (le même que Neve et le coach : préfixe prosp_ pour cohabiter proprement).
+-- À jouer une seule fois dans l'éditeur SQL du projet Supabase « cockpit »
+-- (glimlqyclhfzpdvsnulb), qui devient la base personnelle de Guil pour sa gestion
+-- d'entreprise. Volontairement séparé du projet NEVE, qui appartient à l'atelier de
+-- sa belle-mère : les données d'une cliente ne se mélangent pas aux siennes.
+-- Le préfixe prosp_ cohabite avec les tables du cockpit (audits, documents, constats,
+-- commentaires), qu'il ne faut pas toucher : la démo en ligne s'en sert encore.
 
 create table if not exists prosp_suivi (
   user_id      uuid not null default auth.uid() references auth.users(id) on delete cascade,
