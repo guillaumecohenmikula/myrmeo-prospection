@@ -40,19 +40,6 @@
   .modal .msg{font-size:12px;margin-top:9px;min-height:16px}
 
   .wrap{display:grid;grid-template-columns:345px 1fr;height:calc(100vh - 51px)}
-  /* Sur téléphone (usage en tournée) : la carte d'abord, le panneau en dessous. */
-  @media(max-width:900px){
-    .wrap{grid-template-columns:1fr;height:auto}
-    .main{order:1}.panel{order:2;border-right:none;border-top:1px solid var(--line)}
-    #map,#tableView,#todayView{height:72vh}
-    header{padding:9px 12px;gap:8px}
-    header h1{font-size:14px}
-    .tabs button{padding:6px 11px;font-size:13px}
-    .stbtns{grid-template-columns:1fr}
-    .stbtn{font-size:12.5px;padding:8px}
-    .leaflet-popup-content{min-width:210px}
-    .pop .duo{grid-template-columns:1fr}
-  }
   .panel{overflow-y:auto;border-right:1px solid var(--line);background:var(--card);padding:14px}
   .main{position:relative;overflow:hidden}
   #map{height:100%;z-index:1}
@@ -155,6 +142,20 @@
   .legende{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:8px;
     padding:8px 10px;font-size:11px;line-height:1.7;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.12)}
   .legende span{vertical-align:middle;margin-right:3px}
+
+  /* Sur téléphone (usage en tournée) : la carte d'abord, le panneau en dessous. */
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr;height:auto}
+    .main{order:1}.panel{order:2;border-right:none;border-top:1px solid var(--line)}
+    #map,#tableView,#todayView{height:72vh}
+    header{padding:9px 12px;gap:8px}
+    header h1{font-size:14px}
+    .tabs button{padding:6px 11px;font-size:13px}
+    .stbtns{grid-template-columns:1fr}
+    .stbtn{font-size:12.5px;padding:8px}
+    .leaflet-popup-content{min-width:210px}
+    .pop .duo{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
