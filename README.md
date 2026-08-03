@@ -118,8 +118,15 @@ l'ont atteinte au moins une fois, historique compris, donc les taux sont toujour
 
 ## Les filtres
 
-- **Commerces affichés** : artisans, commerces, bureaux, santé, restauration. Filtre l'affichage
-  sans rien recharger.
+- **Type** : artisans, commerces, bureaux, santé, restauration. Filtre large.
+- **Métier** : la liste précise de ce qui existe dans le secteur chargé, avec le nombre en face
+  (Plombier 4, Boulangerie 2…), triée alphabétiquement et en français. Elle se recalcule à chaque
+  nouveau secteur.
+- **★ Mes cibles prioritaires** : en tête de la liste des métiers, sélectionne d'un coup tous les
+  métiers de ta grille de priorisation (artisans du bâtiment, garage, kiné, ostéo, photographe,
+  traiteur, auto-école, agence immobilière, vétérinaire…). C'est le filtre à utiliser pour préparer
+  une tournée : ce sont les activités sur devis ou sur rendez-vous, celles qui ont une vraie gestion
+  administrative. Les métiers concernés sont marqués d'une ★ dans la liste et dans les fiches.
 - **Seulement ceux sans site connu** : à lire avec la nuance ci-dessous, OpenStreetMap ne renseigne
   le site que d'environ un commerce sur quatre. Ta vérification manuelle prime sur la donnée OSM.
 - **Seulement mon suivi** : masque tout le reste pour y voir clair.

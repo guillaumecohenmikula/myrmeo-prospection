@@ -214,6 +214,7 @@
         <option value="sante">Santé (kiné, ostéo, véto…)</option>
         <option value="resto">Restauration</option>
       </select>
+      <select id="metier" style="margin-top:6px"></select>
       <div class="chkline"><input type="checkbox" id="chkSans" />
         <label for="chkSans" style="margin:0">Seulement ceux sans site connu</label></div>
       <div class="chkline"><input type="checkbox" id="chkSuivi" />
@@ -375,6 +376,41 @@ function sauverCache(){
 /* ---------- Overpass ---------- */
 const SERVEURS = ['https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+
+/* Libellés français des tags OpenStreetMap, qui sont en anglais.
+   PRIORITAIRES = la grille de tournee-locale.md : métiers sur devis ou sur rendez-vous,
+   ticket élevé, vraie gestion administrative. C'est là qu'est le besoin. */
+const METIERS = {
+  plumber:'Plombier', electrician:'Électricien', carpenter:'Menuisier', painter:'Peintre',
+  roofer:'Couvreur', tiler:'Carreleur', locksmith:'Serrurier', gardener:'Paysagiste',
+  'metal_construction':'Métallier', 'window_construction':'Fenêtres', stonemason:'Tailleur de pierre',
+  plasterer:'Plâtrier', scaffolder:'Échafaudage', hvac:'Chauffage climatisation',
+  photographer:'Photographe', caterer:'Traiteur', shoemaker:'Cordonnier', upholsterer:'Tapissier',
+  jeweller:'Joaillier', tailor:'Couturier', signmaker:'Enseigniste', winery:'Vigneron',
+  car_repair:'Garage', bakery:'Boulangerie', hairdresser:'Coiffeur', butcher:'Boucherie',
+  florist:'Fleuriste', optician:'Opticien', beauty:'Institut de beauté', pharmacy:'Pharmacie',
+  supermarket:'Supermarché', convenience:'Épicerie', clothes:'Vêtements', shoes:'Chaussures',
+  furniture:'Meubles', hardware:'Quincaillerie', doityourself:'Bricolage', books:'Librairie',
+  greengrocer:'Primeur', seafood:'Poissonnerie', cheese:'Fromagerie', confectionery:'Confiserie',
+  pastry:'Pâtisserie', deli:'Traiteur', alcohol:'Cave', tobacco:'Tabac', newsagent:'Presse',
+  laundry:'Pressing', dry_cleaning:'Pressing', copyshop:'Reprographie', travel_agency:'Agence de voyage',
+  estate_agent:'Agence immobilière', insurance:'Assurance', lawyer:'Avocat', accountant:'Comptable',
+  architect:'Architecte', it:'Informatique', company:'Entreprise', financial:'Finance',
+  physiotherapist:'Kinésithérapeute', osteopath:'Ostéopathe', dentist:'Dentiste', doctors:'Médecin',
+  veterinary:'Vétérinaire', psychotherapist:'Psychothérapeute', podiatrist:'Podologue',
+  driving_school:'Auto-école', restaurant:'Restaurant', cafe:'Café', bar:'Bar',
+  fast_food:'Restauration rapide', bicycle:'Vélo', car:'Automobile', pet:'Animalerie',
+  toys:'Jouets', sports:'Sport', mobile_phone:'Téléphonie', computer:'Informatique',
+  electronics:'Électronique', kiosk:'Kiosque', variety_store:'Bazar', charity:'Association',
+  garden_centre:'Jardinerie', massage:'Massage', nail_salon:'Ongles', tattoo:'Tatouage'
+};
+const PRIORITAIRES = new Set(['plumber','electrician','carpenter','painter','roofer','tiler',
+  'locksmith','gardener','metal_construction','window_construction','stonemason','plasterer',
+  'hvac','photographer','caterer','upholsterer','shoemaker','signmaker','car_repair',
+  'physiotherapist','osteopath','podiatrist','veterinary','driving_school','estate_agent',
+  'architect','accountant','travel_agency','garden_centre']);
+const libelle = t => METIERS[t] || (t ? t.replace(/_/g,' ') : 'commerce');
+
 const CATS_REQ = ['["craft"]','["shop"]','["office"]','["healthcare"]',
   '["amenity"~"^(veterinary|doctors|dentist|pharmacy|restaurant|cafe|bar|fast_food|driving_school)$"]'];
 
@@ -448,7 +484,7 @@ async function chargerZone(){
     zonesChargees.push(b); sauverCache();
     load.textContent = n ? `${n} commerces ajoutés (${pois.size} au total)` : 'Secteur déjà couvert';
     setTimeout(() => load.classList.remove('on'), 1600);
-    majCacheInfo(); rendreCarte();
+    majCacheInfo(); majSelectMetier(); rendreCarte();
   }catch(err){
     load.innerHTML = (pois.size ? 'Serveurs OSM occupés, affichage du cache. ' : 'Serveurs OSM occupés. ')
       + '<u style="cursor:pointer" id="retry">Réessayer</u>';
@@ -530,6 +566,9 @@ function visible(p){
   const s = suivi[p.id];
   const cat = document.getElementById('cat').value;
   if(cat !== 'tous' && (p.cat || 'autre') !== cat) return false;
+  const met = document.getElementById('metier').value;
+  if(met === '__prio'){ if(!PRIORITAIRES.has(p.type)) return false; }
+  else if(met !== 'tous' && (p.type || 'autre') !== met) return false;
   if(document.getElementById('chkSuivi').checked && !s) return false;
   if(document.getElementById('chkSans').checked){
     if(s && s.siteOk === 'oui') return false;        // vérifié : il en a un
@@ -567,7 +606,7 @@ function ouvrirPopup(p, marker){
 
   const html = `<div class="pop" data-id="${esc(p.id)}">
     <h3>${esc(p.nom)}</h3>
-    <div class="cat">${esc(p.type || 'commerce')}</div>
+    <div class="cat">${esc(libelle(p.type))}${PRIORITAIRES.has(p.type) ? ' ★' : ''}</div>
     ${p.adresse ? `<div class="info">${esc(p.adresse)}</div>` : ''}
     ${p.tel ? `<div class="info">☎ <a href="tel:${esc(p.tel)}">${esc(p.tel)}</a></div>` : ''}
     <div class="info">${p.web
@@ -746,7 +785,7 @@ function rendreListe(){
   box.innerHTML = v.sort((a,b) => st(b).etape - st(a).etape).map(e => `
     <div class="item" style="border-left-color:${st(e).hex}" data-id="${esc(e.id)}">
       <div class="nom">${esc(e.nom)}</div>
-      <div class="meta">${esc(e.type||'')}${e.type&&e.adresse?' · ':''}${esc(e.adresse||'')}</div>
+      <div class="meta">${esc(e.type ? libelle(e.type) : '')}${e.type&&e.adresse?' · ':''}${esc(e.adresse||'')}</div>
       <div class="tags">
         <span class="tag" style="color:${st(e).hex};border-color:${st(e).hex}55">${st(e).label}</span>
         ${e.siteOk === 'non' ? '<span class="tag" style="color:#c17a2b;border-color:#e0c9a8">Pas de site</span>'
@@ -785,7 +824,7 @@ function rendreToday(){
       <div class="g">
         <div class="nom">${esc(e.nom)}</div>
         <div class="act">${esc(e.action || 'Pas d\'action définie')}</div>
-        <div class="meta">${esc(st(e).label)}${e.adresse ? ' · ' + esc(e.adresse) : ''}${
+        <div class="meta">${esc(st(e).label)}${e.type ? ' · ' + esc(libelle(e.type)) : ''}${e.adresse ? ' · ' + esc(e.adresse) : ''}${
           e.tel ? ' · ☎ ' + esc(e.tel) : ''}</div>
       </div>
       <div class="quand">${e.dateAction ? fdate(e.dateAction) : '—'}</div>
@@ -836,7 +875,7 @@ function rendreTableau(){
       `<th data-c="${k}">${l}${triCol===k?(triAsc?' ▲':' ▼'):''}</th>`).join('')}</tr></thead>
     <tbody>${v.map(e => `<tr data-id="${esc(e.id)}" style="cursor:pointer">
       <td><b>${esc(e.nom)}</b></td>
-      <td>${esc(e.type||'')}</td>
+      <td>${esc(e.type ? libelle(e.type) : '')}</td>
       <td>${esc(e.adresse||'')}</td>
       <td style="white-space:nowrap">${e.tel ? `<a href="tel:${esc(e.tel)}" style="color:var(--ink)">${esc(e.tel)}</a>` : '—'}</td>
       <td>${e.web ? `<a href="${esc(e.web.startsWith('http')?e.web:'https://'+e.web)}" target="_blank" rel="noopener" style="color:var(--ink-soft)">site</a>`
@@ -859,6 +898,29 @@ function rendreTableau(){
   });
   document.querySelectorAll('#tableBox tbody tr').forEach(tr =>
     tr.onclick = ev => { if(ev.target.tagName !== 'A') ouvrirDepuisListe(tr.dataset.id); });
+}
+
+function majSelectMetier(){
+  const sel = document.getElementById('metier');
+  const garde = sel.value;
+  const cat = document.getElementById('cat').value;
+  const compte = {};
+  [...pois.values()].forEach(p => {
+    if(cat !== 'tous' && (p.cat || 'autre') !== cat) return;
+    const t = p.type || 'autre';
+    compte[t] = (compte[t] || 0) + 1;
+  });
+  const nbPrio = Object.entries(compte)
+    .filter(([t]) => PRIORITAIRES.has(t)).reduce((n,[,v]) => n + v, 0);
+  const liste = Object.entries(compte).sort((a,b) =>
+    libelle(a[0]).localeCompare(libelle(b[0]), 'fr'));
+
+  sel.innerHTML =
+      `<option value="tous">Tous les métiers</option>`
+    + (nbPrio ? `<option value="__prio">★ Mes cibles prioritaires (${nbPrio})</option>` : '')
+    + liste.map(([t,n]) =>
+        `<option value="${esc(t)}">${esc(libelle(t))} (${n})${PRIORITAIRES.has(t) ? ' ★' : ''}</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === garde) ? garde : 'tous';
 }
 
 function majCacheInfo(){
@@ -892,7 +954,8 @@ document.getElementById('tabMap').onclick = () => montrerVue('carte');
 document.getElementById('tabTable').onclick = () => montrerVue('tableau');
 document.getElementById('tabToday').onclick = () => montrerVue('today');
 
-document.getElementById('cat').onchange = rendreCarte;
+document.getElementById('cat').onchange = () => { majSelectMetier(); rendreCarte(); };
+document.getElementById('metier').onchange = rendreCarte;
 document.getElementById('chkSans').onchange = rendreCarte;
 document.getElementById('chkSuivi').onchange = rendreCarte;
 document.getElementById('search').oninput = e => { recherche = e.target.value.trim(); rendre(); };
@@ -1049,6 +1112,7 @@ charger();
 chargerCache();
 rendre();
 majCacheInfo();
+majSelectMetier();
 majEtatSync('Hors ligne');
 map.whenReady(() => { map.invalidateSize(); setTimeout(chargerZone, 250); });
 initSession();
