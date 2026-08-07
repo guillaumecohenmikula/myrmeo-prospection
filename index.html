@@ -103,6 +103,14 @@
   .pop .duo{display:grid;grid-template-columns:1fr 108px;gap:5px}
   .pop .duo input{font-size:12.5px}
   .pop .verif{display:flex;gap:5px;align-items:center;margin-top:5px;flex-wrap:wrap}
+  /* Bandeau de pré-qualification, écrit par l'agent d'enrichissement. */
+  .pop .prequal{border-radius:6px;padding:6px 8px;margin:6px 0;font-size:12px;line-height:1.4}
+  .pop .prequal b{display:block;margin-bottom:2px}
+  .pop .prequal i{display:block;color:var(--muted);font-style:normal;font-size:11px;margin-top:3px}
+  .pop .prequal.nA{background:#e8f4ea;border-left:3px solid #2e8b57}
+  .pop .prequal.nB{background:#fdf5e3;border-left:3px solid #d0a24c}
+  .pop .prequal.nC{background:#f2f1ee;border-left:3px solid #b5b2ab}
+  .pop .prequal.necarte{background:#f7ecea;border-left:3px solid var(--rouge);color:var(--muted)}
   .pop .vbtn{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--line);
     background:#fff;cursor:pointer;color:var(--muted)}
   .pop .vbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -411,6 +419,15 @@ const PRIORITAIRES = new Set(['plumber','electrician','carpenter','painter','roo
   'architect','accountant','travel_agency','garden_centre']);
 const libelle = t => METIERS[t] || (t ? t.replace(/_/g,' ') : 'commerce');
 
+/* Constats posés par l'agent d'enrichissement (dossier ../enrichissement).
+   « amateur » et « annuaire » comptent comme absence de site : une page wordpress.com
+   ou une fiche Pages Jaunes n'est pas un site, et c'est un signal d'achat. */
+const ETAT_SITE = {
+  vivant:'site en service', mort:'site en panne', parque:'domaine parqué',
+  reseau_social:'réseaux sociaux seulement', annuaire:'annuaire seulement',
+  amateur:'page sur plateforme gratuite', aucun:'aucun site trouvé'
+};
+
 const CATS_REQ = ['["craft"]','["shop"]','["office"]','["healthcare"]',
   '["amenity"~"^(veterinary|doctors|dentist|pharmacy|restaurant|cafe|bar|fast_food|driving_school)$"]'];
 
@@ -609,11 +626,19 @@ function ouvrirPopup(p, marker){
     <div class="cat">${esc(libelle(p.type))}${PRIORITAIRES.has(p.type) ? ' ★' : ''}</div>
     ${p.adresse ? `<div class="info">${esc(p.adresse)}</div>` : ''}
     ${p.tel ? `<div class="info">☎ <a href="tel:${esc(p.tel)}">${esc(p.tel)}</a></div>` : ''}
+    ${s && s.note ? `<div class="prequal n${esc(s.note)}">
+      <b>${s.note === 'ecarte' ? '⛔ À écarter' : 'Note ' + esc(s.note)}</b>
+      <span>${esc(s.motifPrequal || '')}</span>
+      ${s.prequalDate ? `<i>vérifié le ${fdate(s.prequalDate)}</i>` : ''}</div>` : ''}
     <div class="info">${p.web
       ? `<a href="${esc(p.web.startsWith('http') ? p.web : 'https://' + p.web)}" target="_blank" rel="noopener">site web</a>`
       : (s && s.siteOk === 'non' ? '<span class="sans">pas de site web (vérifié)</span>'
        : s && s.siteOk === 'oui' ? '<span style="color:var(--muted)">a un site (vérifié)</span>'
-       : '<span style="color:var(--muted)">site non renseigné dans OpenStreetMap</span>')}</div>
+       : '<span style="color:var(--muted)">site non renseigné dans OpenStreetMap</span>')}${
+      s && s.siteEtat && s.siteEtat !== 'aucun'
+        ? ` <span style="color:var(--muted)">· ${esc(ETAT_SITE[s.siteEtat] || s.siteEtat)}</span>` : ''}${
+      s && s.siteMobile === 'non' ? ' <span class="sans">· pas lisible sur mobile</span>' : ''}</div>
+    ${s && s.enseigne ? `<div class="info" style="color:var(--muted)">Enseigne : ${esc(s.enseigne)}</div>` : ''}
     ${p.web ? '' : `<div class="verif">
       <button class="vbtn ${s && s.siteOk==='non'?'on':''}" data-site="non">Pas de site</button>
       <button class="vbtn ${s && s.siteOk==='oui'?'on':''}" data-site="oui">A un site</button>
@@ -761,8 +786,21 @@ function rendreStats(){
     (aFaire + reactiver) ? `<span class="badge">${aFaire + reactiver}</span>` : '';
 }
 
+/* Filtres de pré-qualification : la liste de travail que l'agent d'enrichissement
+   prépare. On ne garde que ce qui n'est pas encore sorti du pipeline, sinon un client
+   gagné resterait en tête de la liste « à démarcher ». */
+const PREQUAL = {
+  __noteA:  { label:'🟢 À démarcher',  test: e => e.note === 'A' && !['gagne','ecarte','plus_tard'].includes(e.statut) },
+  __noteAB: { label:'🟡 A et B',       test: e => ['A','B'].includes(e.note) && !['gagne','ecarte','plus_tard'].includes(e.statut) }
+};
+
 function rendreFiltres(){
-  document.getElementById('filters').innerHTML =
+  const chipsPrequal = Object.entries(PREQUAL).map(([k, v]) => {
+    const n = entrees().filter(v.test).length;
+    return n ? `<span class="chip ${filtre===k?'on':''}" data-f="${k}">${v.label} ${n}</span>` : '';
+  }).join('');
+
+  document.getElementById('filters').innerHTML = chipsPrequal +
     ['tous', ...Object.keys(STATUTS)].map(k => {
       const n = k === 'tous' ? entrees().length : nb(k);
       const lab = k === 'tous' ? 'Tous' : STATUTS[k].label;
@@ -773,8 +811,11 @@ function rendreFiltres(){
     c.onclick = () => { filtre = c.dataset.f; rendre(); });
 }
 
-const filtrees = () => (filtre === 'tous' ? entrees() : entrees().filter(e => e.statut === filtre))
-  .filter(correspond);
+const filtrees = () => (
+  PREQUAL[filtre]   ? entrees().filter(PREQUAL[filtre].test)
+  : filtre === 'tous' ? entrees()
+  : entrees().filter(e => e.statut === filtre)
+).filter(correspond);
 
 function rendreListe(){
   const v = filtrees(), box = document.getElementById('liste');
@@ -788,6 +829,8 @@ function rendreListe(){
       <div class="meta">${esc(e.type ? libelle(e.type) : '')}${e.type&&e.adresse?' · ':''}${esc(e.adresse||'')}</div>
       <div class="tags">
         <span class="tag" style="color:${st(e).hex};border-color:${st(e).hex}55">${st(e).label}</span>
+        ${e.note && e.note !== 'ecarte'
+          ? `<span class="tag" title="${esc(e.motifPrequal||'')}">Note ${esc(e.note)}</span>` : ''}
         ${e.siteOk === 'non' ? '<span class="tag" style="color:#c17a2b;border-color:#e0c9a8">Pas de site</span>'
           : (!e.web && !e.siteOk ? '<span class="tag">Site à vérifier</span>' : '')}
         ${e.dateAction ? `<span class="tag ${echu(e)?'alerte':''}">${esc(e.action||'Action')} ${fdate(e.dateAction)}</span>`
@@ -1011,13 +1054,19 @@ const versLigne = (id, e) => ({
   lat:e.lat??null, lon:e.lon??null, statut:e.statut||'a_qualifier',
   action:e.action||null, date_action:e.dateAction||null, source:e.source||null,
   motif:e.motif||null, type_mission:e.typeMission||null, notes:e.notes||null,
-  site_ok:e.siteOk||null, hist:e.hist||[], maj:e.maj||today(), updated_at:new Date().toISOString()
+  site_ok:e.siteOk||null, hist:e.hist||[], maj:e.maj||today(), updated_at:new Date().toISOString(),
+  /* Pré-qualification écrite par l'agent d'enrichissement. Renvoyée telle quelle :
+     la carte l'affiche et s'en sert pour trier, elle ne la recalcule jamais. */
+  site_etat:e.siteEtat||null, site_mobile:e.siteMobile||null, enseigne:e.enseigne||null,
+  prequal_note:e.note||null, prequal_motif:e.motifPrequal||null, prequal_date:e.prequalDate||null
 });
 const versFiche = r => ({
   nom:r.nom||'', type:r.type||'', adresse:r.adresse||'', tel:r.tel||'', web:r.web||'',
   lat:r.lat, lon:r.lon, statut:r.statut, action:r.action||'', dateAction:r.date_action||'',
   source:r.source||'', motif:r.motif||'', typeMission:r.type_mission||'',
-  notes:r.notes||'', siteOk:r.site_ok||'', hist:r.hist||[], maj:r.maj||''
+  notes:r.notes||'', siteOk:r.site_ok||'', hist:r.hist||[], maj:r.maj||'',
+  siteEtat:r.site_etat||'', siteMobile:r.site_mobile||'', enseigne:r.enseigne||'',
+  note:r.prequal_note||'', motifPrequal:r.prequal_motif||'', prequalDate:r.prequal_date||''
 });
 
 function majEtatSync(txt, cls){
