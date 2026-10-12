@@ -20,6 +20,22 @@ Les explications sont en français.
 - Phrase à reconstruire à partir du français (banque de mots)
 - Dictée : la phrase est lue par la synthèse vocale du navigateur, accent britannique ou américain
 - Paires de vocabulaire
+- **À l'oral, dans chaque leçon** : une phrase à lire à voix haute et une phrase à traduire à l'oral
+
+## Onglet Oral
+
+- **Dialogues guidés** (6) : prospection, visio client, report de rendez-vous, négociation, small talk,
+  présentation de chiffres. L'interlocuteur parle, on t'indique en français quoi exprimer, tu réponds
+  à voix haute. Option « écoute pure » pour masquer le texte.
+- **Prononciation** (5 séries) : le son TH, les mots piégeux (schedule, Wednesday, receipt…),
+  l'accent tonique, le H et les terminaisons -ED, chiffres et dates. Les mots mal prononcés
+  apparaissent en rouge.
+- **Conversation libre avec Claude** (version Artifact uniquement) : Claude joue ton interlocuteur,
+  répond à voix haute, corrige chaque réplique et termine par un bilan.
+
+La reconnaissance vocale utilise le micro du navigateur (Chrome, Edge, Safari) quand l'app est
+ouverte directement, par exemple sur GitHub Pages. Dans un Artifact claude.ai, le micro du navigateur
+est bloqué : on répond avec la dictée du clavier du téléphone.
 
 ## Mécanique
 
