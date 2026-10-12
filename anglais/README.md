@@ -30,8 +30,19 @@ Les explications sont en français.
 - **Prononciation** (5 séries) : le son TH, les mots piégeux (schedule, Wednesday, receipt…),
   l'accent tonique, le H et les terminaisons -ED, chiffres et dates. Les mots mal prononcés
   apparaissent en rouge.
-- **Conversation libre avec Claude** (version Artifact uniquement) : Claude joue ton interlocuteur,
-  répond à voix haute, corrige chaque réplique et termine par un bilan.
+- **Discussions avec Claude** : 9 situations (prospection, découverte, négociation, client mécontent,
+  small talk, parler de ton activité, entretien, tendances, discussion libre) ou un sujet de ton
+  choix. Claude répond à voix haute, corrige tes répliques (en direct ou seulement dans le bilan)
+  et termine par un bilan. Boutons « Répéter » et « Plus lentement ». Avec le micro du navigateur,
+  le mode **mains libres** rouvre le micro dès que Claude a fini de parler : on discute comme au
+  téléphone.
+
+Les discussions et le coach fonctionnent :
+- dans l'Artifact claude.ai, avec ton compte Claude ;
+- sur la version en ligne, si tu ajoutes une clé API Anthropic dans Profil (facultatif, facturée à
+  l'usage sur ton compte Anthropic, quelques centimes par discussion). La clé reste dans le
+  `localStorage` du navigateur et sert seulement aux appels vers l'API, via le SDK officiel
+  `@anthropic-ai/sdk` chargé depuis jsDelivr.
 
 La reconnaissance vocale utilise le micro du navigateur (Chrome, Edge, Safari) quand l'app est
 ouverte directement, par exemple sur GitHub Pages. Dans un Artifact claude.ai, le micro du navigateur
@@ -39,9 +50,9 @@ est bloqué : on répond avec la dictée du clavier du téléphone.
 
 ## Mécanique
 
+- **Usage illimité** : pas de cœurs ni de vies, toutes les leçons sont ouvertes dès le départ
 - **XP** : 10 par leçon, +5 sans erreur ; objectif quotidien réglable (10 à 50 XP)
 - **Série** : nombre de jours consécutifs avec au moins une leçon
-- **Cœurs** : 5, un de perdu par erreur, un regagné toutes les 30 minutes (désactivable)
 - **Révision** : chaque erreur revient après 1, 3 puis 7 jours jusqu'à être maîtrisée
 - Clavier : chiffres pour choisir, Entrée pour valider, Retour arrière pour retirer un mot
 

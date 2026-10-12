@@ -65,7 +65,6 @@ svg{display:block}
 .stat-pill svg{width:22px;height:22px}
 .stat-pill.flame{color:var(--gold)} .stat-pill.flame.cold{color:var(--ink-3)}
 .stat-pill.xp{color:var(--primary)}
-.stat-pill.hearts{color:var(--heart)}
 
 /* ---------- views ---------- */
 main{max-width:560px;margin:0 auto;padding:16px 16px 110px}
@@ -86,7 +85,6 @@ main{max-width:560px;margin:0 auto;padding:16px 16px 110px}
 .unit-banner h2{font-size:22px}
 .unit-banner p{margin:0;font-size:14px;opacity:.92}
 .unit-banner .uprog{font-size:12.5px;opacity:.9;margin-top:4px}
-.unit.locked .unit-banner{filter:saturate(.25) brightness(.95);opacity:.75}
 
 .path{display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 6px}
 .node-wrap{position:relative;display:flex;flex-direction:column;align-items:center}
@@ -148,8 +146,8 @@ main{max-width:560px;margin:0 auto;padding:16px 16px 110px}
 .l-prog{flex:1;height:16px;border-radius:9px;background:var(--sunk);overflow:hidden}
 .l-prog i{display:block;height:100%;width:0;background:var(--ok);border-radius:9px;transition:width .35s ease;
   background-image:linear-gradient(rgba(255,255,255,.28),rgba(255,255,255,.28));background-size:100% 35%;background-repeat:no-repeat;background-position:0 30%}
-.l-hearts{display:flex;align-items:center;gap:4px;color:var(--heart);font-weight:700}
-.l-hearts svg{width:24px;height:24px}
+.l-hearts{display:flex;align-items:center}
+.l-kind{color:var(--ink-2);font-size:13px;font-weight:700;letter-spacing:.04em}
 .l-body{flex:1;overflow-y:auto;width:100%;max-width:640px;margin:0 auto;padding:8px 16px 24px}
 .l-foot{border-top:2px solid var(--line);padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--bg);transition:background .2s}
 .l-foot-in{max-width:640px;margin:0 auto;display:grid;gap:12px}
@@ -306,7 +304,7 @@ textarea{width:100%;min-height:150px;border:2px solid var(--line);border-radius:
 .note{font-size:13.5px}
 .note a{color:var(--primary);font-weight:700}
 .sub{font-size:13.5px;color:var(--ink-2);margin:-4px 0 10px}
-.olist{display:grid;gap:10px}
+.olist{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
 .oitem{display:flex;align-items:center;gap:14px;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 3px 0 var(--line)}
 .oitem:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 .oitem .oi{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;color:#fff}
@@ -320,6 +318,17 @@ textarea{width:100%;min-height:150px;border:2px solid var(--line);border-radius:
 .aic-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
 #aicAgain{margin-top:14px}
 .coach-out ul{margin:6px 0 0;padding-left:20px}
+.aic-opts{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:flex-end}
+.mini-tog{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);cursor:pointer}
+.mini-tog input{width:18px;height:18px;accent-color:var(--primary)}
+.replay{display:flex;gap:8px;justify-content:center;margin-bottom:6px}
+.oitem.custom{cursor:default}
+.custom-in{flex:1;display:grid;gap:8px}
+.custom-in label{cursor:pointer}
+.custom-row{display:flex;gap:8px}
+.custom-row input{flex:1;min-width:0;width:100%;border:2px solid var(--line);border-radius:10px;padding:9px 11px;font:15px var(--f-body);background:var(--surface);color:var(--ink)}
+.hint2{display:block;font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.45}
+.hint2 .linkbtn{padding:0;font-size:12.5px}
 .today .oral-cta{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:2px solid var(--line);padding-top:10px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:380px){.brand small{display:none}.top-in{gap:10px}}
@@ -332,7 +341,6 @@ textarea{width:100%;min-height:150px;border:2px solid var(--line);border-radius:
     <div class="brand">Anglais Pro<small>Business English, 5 minutes par jour</small></div>
     <div class="stat-pill flame" id="topStreak" title="Série de jours"></div>
     <div class="stat-pill xp" id="topXp" title="XP total"></div>
-    <div class="stat-pill hearts" id="topHearts" title="Cœurs"></div>
   </div>
 </header>
 
@@ -739,6 +747,15 @@ const AI_SCEN = [
   {id:'a5', t:'Small talk au salon', d:'Emma, consultante, à la pause café.',
    role:'Emma, a friendly marketing consultant met at a trade show coffee break. Chat about work, the show, travel and business, and ask the learner about their company.',
    opener:'Hi! The coffee is actually good here, isn\'t it? Is this your first time at the show?'},
+  {id:'a7', t:'Parler de ton activité', d:'Une journaliste curieuse t\'interroge sur ton entreprise.',
+   role:'Jane, a curious business journalist interviewing the learner about their company: what they do, their clients, why they started, their plans. Ask one question at a time and react to what they say.',
+   opener:'Thanks for taking the time! So, tell me about your business. What do you do exactly?'},
+  {id:'a8', t:'Entretien en anglais', d:'Présente ton parcours, tes forces, tes projets.',
+   role:'Daniel, a friendly interviewer at an international company. Ask about the learner\'s background, strengths, a challenge they overcame and their goals, one question at a time.',
+   opener:'Hi, nice to meet you. Could you start by telling me a bit about yourself?'},
+  {id:'a9', t:'Tendances et actualité', d:'IA, télétravail, petites entreprises : donne ton avis.',
+   role:'Priya, a colleague who enjoys discussing business trends: AI at work, remote work, small businesses, digital tools. Share opinions and ask for theirs.',
+   opener:'Have you noticed how much AI tools are changing the way small businesses work?'},
   {id:'a6', t:'Discussion libre', d:'Un collègue anglophone, sujet au choix.',
    role:'a friendly English-speaking colleague having a relaxed chat about work, projects and weekend plans. Follow whatever topic the learner brings up.',
    opener:'Hey! How\'s your week going so far?'},
@@ -770,10 +787,10 @@ const I = {
    ÉTAT ET SAUVEGARDE
    ===================================================================== */
 const KEY = 'anglais-pro-v1';
-const DAY = 864e5, HEART_MS = 30*60*1000, MAX_HEARTS = 5;
-const defaults = () => ({v:1, xp:0, days:{}, streak:{count:0,last:null}, done:{}, hearts:MAX_HEARTS, heartsAt:Date.now(),
+const DAY = 864e5;
+const defaults = () => ({v:1, xp:0, days:{}, streak:{count:0,last:null}, done:{},
   mist:{}, stats:{answered:0,correct:0,lessons:0}, oral:{d:{},p:{},ai:0}, speakOffUntil:0,
-  settings:{goal:20, accent:'en-GB', rate:0.95, sound:true, autoread:true, infinite:false, unlockAll:false, speakInLessons:true, input:'mic', hideText:false}, updatedAt:0});
+  settings:{goal:20, accent:'en-GB', rate:0.95, sound:true, autoread:true, speakInLessons:true, input:'mic', hideText:false, handsFree:true, liveFix:true}, updatedAt:0});
 function merge(s){ const d=defaults(); s=s&&typeof s==='object'?s:{}; return {...d, ...s, streak:{...d.streak,...(s.streak||{})}, stats:{...d.stats,...(s.stats||{})}, settings:{...d.settings,...(s.settings||{})}, days:s.days||{}, done:s.done||{}, mist:s.mist||{}, oral:{d:{},p:{},ai:0,...(s.oral||{})}}; }
 function readLocal(){ try{ return merge(JSON.parse(localStorage.getItem(KEY))); }catch(e){ return defaults(); } }
 let S = readLocal();
@@ -803,7 +820,7 @@ async function initCloud(){
   }catch(e){ cloudRef = null; }
 }
 
-/* ---------- dates, streak, xp, hearts ---------- */
+/* ---------- dates, série, xp ---------- */
 const dkey = (d=new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const yesterday = () => dkey(new Date(Date.now()-DAY));
 function streakNow(){ const l=S.streak.last; return (l===dkey()||l===yesterday()) ? S.streak.count : 0; }
@@ -812,22 +829,11 @@ function addXp(n){
   const t=dkey(); S.xp+=n; S.days[t]=(S.days[t]||0)+n;
   if(S.streak.last!==t){ S.streak.count = S.streak.last===yesterday() ? S.streak.count+1 : 1; S.streak.last=t; }
 }
-function hearts(){
-  if(S.settings.infinite) return Infinity;
-  if(S.hearts<MAX_HEARTS){
-    const n=Math.floor((Date.now()-S.heartsAt)/HEART_MS);
-    if(n>0){ S.hearts=Math.min(MAX_HEARTS,S.hearts+n); S.heartsAt = S.hearts>=MAX_HEARTS ? Date.now() : S.heartsAt+n*HEART_MS; }
-  }
-  return S.hearts;
-}
-function loseHeart(){ if(S.settings.infinite) return; hearts(); if(S.hearts===MAX_HEARTS) S.heartsAt=Date.now(); S.hearts=Math.max(0,S.hearts-1); }
-function nextHeartIn(){ const ms=HEART_MS-((Date.now()-S.heartsAt)%HEART_MS); return Math.ceil(ms/60000); }
 
 /* ---------- index du contenu ---------- */
 const LESSONS = []; const LBY = {};
 UNITS.forEach((u,ui)=>u.lessons.forEach((l,li)=>{ const e={u,l,ui,li,g:LESSONS.length}; LESSONS.push(e); LBY[l.id]=e; }));
-function unlocked(g){ return S.settings.unlockAll || g===0 || !!S.done[LESSONS[g-1].l.id] || !!S.done[LESSONS[g].l.id]; }
-function currentG(){ for(const e of LESSONS){ if(!S.done[e.l.id]) return unlocked(e.g)?e.g:-1; } return -1; }
+function currentG(){ const e=LESSONS.find(e=>!S.done[e.l.id]); return e ? e.g : -1; }
 
 /* ---------- utilitaires ---------- */
 const $ = id => document.getElementById(id);
@@ -856,10 +862,10 @@ function voice(){
   try{ const vs=speechSynthesis.getVoices(); const acc=S.settings.accent.toLowerCase();
     return vs.find(v=>v.lang.replace('_','-').toLowerCase()===acc) || vs.find(v=>v.lang.toLowerCase().startsWith('en')) || null; }catch(e){ return null; }
 }
-function speak(text, rate){
-  if(!canSpeak||!text) return;
+function speak(text, rate, onend){
+  if(!canSpeak||!text){ if(onend) onend(); return; }
   try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=S.settings.accent; const v=voice(); if(v) u.voice=v;
-    u.rate=rate||S.settings.rate; speechSynthesis.speak(u); }catch(e){}
+    u.rate=rate||S.settings.rate; if(onend) u.onend=onend; speechSynthesis.speak(u); }catch(e){ if(onend) onend(); }
 }
 if(canSpeak){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
 const sayBtn = (text, cls='') => canSpeak ? `<button class="say ${cls}" data-say="${esc(text)}" aria-label="Écouter">${I.speaker}</button>` : '';
@@ -1069,7 +1075,6 @@ let lessonOpen=false, LS=null, cur=null;
 
 function startLesson(kind, lessonId){
   closeSheet();
-  if(kind==='lesson' && hearts()<=0){ return showNoHearts(); }
   let queue, extra={};
   if(kind==='lesson') queue = buildLesson(LBY[lessonId]);
   else if(kind==='review') queue = buildReview();
@@ -1089,9 +1094,8 @@ function closeLesson(){
 function renderLessonHead(){
   const n = LS.ended ? LS.queue.length : LS.idx + (cur && cur.checked ? 1 : 0);
   $('lBar').style.width = Math.min(100, n/LS.queue.length*100)+'%';
-  const h = hearts(), lab = {review:'RÉVISION', dialog:'DIALOGUE', pron:'PRONONCIATION'}[LS.kind];
-  $('lHearts').innerHTML = lab ? `<span style="color:var(--ink-2);font-size:13px;font-weight:700">${lab}</span>`
-    : I.heart + '<span class="num">'+(h===Infinity?'∞':h)+'</span>';
+  const lab = {lesson:'LEÇON', review:'RÉVISION', dialog:'DIALOGUE', pron:'PRONONCIATION'}[LS.kind];
+  $('lHearts').innerHTML = `<span class="l-kind">${lab}</span>`;
 }
 function setFoot(state, html){
   const f=$('lFoot'); f.classList.remove('ok','ko'); if(state) f.classList.add(state);
@@ -1305,7 +1309,6 @@ function doCheck(){
     setMain('Continuer', true, 'ok');
   } else {
     LS.mistakes++; sndKo();
-    if(LS.kind==='lesson') loseHeart();
     if(!LS.requeued.has(ex.key)){ LS.requeued.add(ex.key); LS.queue.push({...ex}); }
     const sol = cur.solution ? `<div class="fb-sol">${esc(cur.solution)}</div>` : '';
     setFoot('ko', `<div class="fb-title">${I.close}Réponse correcte :</div>${sol}${cur.extra?`<div class="fb-ex">${esc(cur.extra)}</div>`:''}${ex.ex?`<div class="fb-ex">${esc(ex.ex)}</div>`:''}`);
@@ -1317,7 +1320,6 @@ function doCheck(){
 }
 function next(){
   if(LS.ended){ return closeLesson(); }
-  if(LS.kind==='lesson' && hearts()<=0){ return outOfHearts(); }
   LS.idx++;
   if(LS.idx>=LS.queue.length) return finishLesson();
   renderEx();
@@ -1331,8 +1333,7 @@ function finishLesson(){
   const before = streakNow(), goalBefore = todayXp()>=S.settings.goal;
   addXp(xp);
   if(LS.kind==='lesson'){ S.done[LS.lessonId]=(S.done[LS.lessonId]||0)+1; }
-  else if(LS.kind==='review'){ S.hearts=Math.min(MAX_HEARTS,S.hearts+1); }
-  else { const o=S.oral[LS.kind==='dialog'?'d':'p']; o[LS.lessonId]=(o[LS.lessonId]||0)+1; }
+  else if(LS.kind!=='review'){ const o=S.oral[LS.kind==='dialog'?'d':'p']; o[LS.lessonId]=(o[LS.lessonId]||0)+1; }
   S.stats.lessons++;
   save(); sndWin();
   const secs = Math.round((Date.now()-LS.t0)/1000);
@@ -1343,7 +1344,7 @@ function finishLesson(){
   const msg = st>before ? `Série : <b>${st} jour${st>1?'s':''}</b>. Reviens demain pour la prolonger.`
     : goalNow && !goalBefore ? 'Objectif du jour atteint.'
     : LS.kind==='lesson' ? (perfect ? 'Aucune erreur, +5 XP de bonus.' : 'Tes erreurs reviendront dans Révision.')
-    : LS.kind==='review' ? 'Un cœur récupéré.' : 'Refais-le demain : la répétition fixe les tournures.';
+    : LS.kind==='review' ? 'Tes points faibles reculent.' : 'Refais-le demain : la répétition fixe les tournures.';
   $('lBar').style.width='100%';
   $('lBody').innerHTML = `<div class="done-screen">
     <svg class="medal" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="var(--gold-soft)"/><circle cx="60" cy="60" r="38" fill="var(--gold)"/>
@@ -1357,16 +1358,6 @@ function finishLesson(){
     </div></div>`;
   setFoot(null,null); setMain('Continuer', true);
   renderLessonHead();
-}
-function outOfHearts(){
-  LS.ended=true; cur=null;
-  $('lBody').innerHTML = `<div class="done-screen">
-    <svg class="medal" viewBox="0 0 24 24" style="color:var(--heart);width:96px;height:96px" aria-hidden="true">${I.heart.replace(/<\/?svg[^>]*>/g,'')}</svg>
-    <h2>Plus de cœurs</h2>
-    <p>Un cœur revient toutes les 30 minutes (prochain dans ${nextHeartIn()} min). Une révision ne coûte aucun cœur et t'en rend un.</p>
-    <button class="btn gold" id="ohReview">Réviser maintenant</button></div>`;
-  $('ohReview').onclick=()=>{ closeLesson(); startReviewOrExplain(); };
-  setFoot(null,null); setMain('Quitter', true, 'ghost');
 }
 $('lQuit').onclick = () => {
   if(!LS || LS.ended) return closeLesson();
@@ -1394,24 +1385,12 @@ function openSheet(html){
   const f=$('sheetHost').querySelector('button'); if(f) f.focus();
 }
 function closeSheet(){ $('sheetHost').innerHTML=''; }
-function showNoHearts(){
-  openSheet(`<div class="eyebrow">Cœurs</div><h3>Plus de cœurs pour l'instant</h3>
-    <p>Prochain cœur dans ${nextHeartIn()} min. Une révision ne coûte aucun cœur et t'en rend un.</p>
-    <div class="row"><button class="btn gold" id="shRev">Réviser</button><button class="btn ghost" id="shClose">Plus tard</button></div>`);
-  $('shRev').onclick=()=>{ closeSheet(); startReviewOrExplain(); }; $('shClose').onclick=closeSheet;
-}
 function startReviewOrExplain(){
   if(!LESSONS.some(e=>S.done[e.l.id]) && !dueKeys().length){ setView('review'); return; }
   startLesson('review');
 }
 function lessonSheet(g){
   const e=LESSONS[g]; const done=S.done[e.l.id]||0;
-  if(!unlocked(g)){
-    openSheet(`<div class="eyebrow">Unité ${e.ui+1} · Leçon ${e.li+1}/${e.u.lessons.length}</div><h3>${esc(e.l.title)}</h3>
-      <p>Termine la leçon précédente pour débloquer celle-ci. Niveau déjà acquis ? Active « Tout débloquer » dans Profil.</p>
-      <div class="row"><button class="btn ghost" id="shClose">OK</button></div>`);
-    $('shClose').onclick=closeSheet; return;
-  }
   openSheet(`<div class="eyebrow">Unité ${e.ui+1} · Leçon ${e.li+1}/${e.u.lessons.length} · ${esc(e.u.level)}</div><h3>${esc(e.l.title)}</h3>
     <p>${e.l.vocab.slice(0,3).map(v=>esc(v[1])).join(' · ')}…</p>
     <p>${done?`Terminée ${done} fois. Refais-la pour ancrer le vocabulaire.`:'Environ 10 exercices, 3 à 5 minutes.'} +10 XP, +5 si aucune erreur.</p>
@@ -1423,18 +1402,15 @@ function lessonSheet(g){
    VUES
    ===================================================================== */
 let currentView='path';
-let coachAvailable=false;
 function renderTop(){
   const st=streakNow();
   $('topStreak').className='stat-pill flame'+(S.streak.last===dkey()?'':' cold');
   $('topStreak').innerHTML=I.flame+`<span class="num">${st}</span>`;
   $('topXp').innerHTML=I.bolt+`<span class="num">${S.xp}</span>`;
-  const h=hearts();
-  $('topHearts').innerHTML=I.heart+`<span class="num">${h===Infinity?'∞':h}</span>`;
 }
 function renderNav(){
   const due=dueKeys().length;
-  const tabs=[['path','Parcours',I.path],['oral','Oral',I.mic],['review','Révision',I.review],...(coachAvailable?[['coach','Coach',I.coach]]:[]),['profile','Profil',I.user]];
+  const tabs=[['path','Parcours',I.path],['oral','Oral',I.mic],['review','Révision',I.review],...(aiAvailable()?[['coach','Coach',I.coach]]:[]),['profile','Profil',I.user]];
   $('nav').innerHTML=tabs.map(([id,label,ic])=>`<button class="${currentView===id?'on':''}" data-v="${id}" aria-current="${currentView===id?'page':'false'}">${ic}${label}${id==='review'&&due?`<span class="badge num">${due}</span>`:''}</button>`).join('');
   $('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
 }
@@ -1463,26 +1439,25 @@ function renderPath(){
     <div class="bar"><i style="width:${Math.min(100,tx/goal*100)}%"></i></div>
     ${due?`<div class="today-row"><span class="muted">${due} point${due>1?'s':''} à revoir aujourd'hui.</span><button class="btn small gold cta-review" id="goReview">Réviser</button></div>`
       : `<span class="muted">${tx>=goal?'Objectif atteint. Une leçon de plus consolide la série.':'Une leçon rapporte 10 à 15 XP.'}</span>`}
-    <div class="oral-cta"><span class="muted">À l'oral : dialogues, prononciation${sampleFn?', conversation avec Claude':''}.</span><button class="btn small" id="goOral">Parler</button></div>
+    <div class="oral-cta"><span class="muted">À l'oral : ${aiAvailable()?'discussions avec Claude, ':''}dialogues, prononciation.</span><button class="btn small" id="goOral">Parler</button></div>
   </div>`;
   let k=0;
   UNITS.forEach((u,ui)=>{
     const es=LESSONS.filter(e=>e.ui===ui);
     const nDone=es.filter(e=>S.done[e.l.id]).length;
-    const locked=!unlocked(es[0].g);
-    html+=`<section class="unit${locked?' locked':''}" style="--uc:${u.color};--ucl:${u.ledge}">
+    html+=`<section class="unit" style="--uc:${u.color};--ucl:${u.ledge}">
       <div class="unit-banner" style="background:${u.color}">
         <div class="eyebrow">Unité ${ui+1}<span class="cefr">${esc(u.level)}</span></div>
         <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>
-        <div class="uprog num">${nDone} / ${es.length} leçon${es.length>1?'s':''}${locked?' · verrouillée':''}</div>
+        <div class="uprog num">${nDone} / ${es.length} leçon${es.length>1?'s':''}</div>
       </div><div class="path">`;
     es.forEach(e=>{
-      const done=!!S.done[e.l.id], open=unlocked(e.g), isCur=e.g===cg;
-      const cls = done?'done':(open?'':'locked');
-      const ic = done?I.check:(open?I.star:I.lock);
+      const done=!!S.done[e.l.id], isCur=e.g===cg;
+      const cls = done?'done':'';
+      const ic = done?I.check:I.star;
       html+=`<div class="node-wrap${isCur?' has-tag':''}" style="transform:translateX(${offsets[k++%offsets.length]}px)">
         ${isCur?`<div class="node-tag">${S.stats.lessons?'Continuer':'Commencer'}</div>`:''}
-        <button class="node ${cls}${isCur?' current':''}" data-g="${e.g}" aria-label="${esc(e.l.title)}${done?' (terminée)':(open?'':' (verrouillée)')}">${ic}</button>
+        <button class="node ${cls}${isCur?' current':''}" data-g="${e.g}" aria-label="${esc(e.l.title)}${done?' (terminée)':''}">${ic}</button>
         <div class="node-label">${esc(e.l.title)}</div></div>`;
     });
     html+=`</div></section>`;
@@ -1507,7 +1482,7 @@ function renderReview(){
   let html=`<div class="card"><h2>Révision</h2>
     <p>${due.length?`${due.length} point${due.length>1?'s':''} à revoir maintenant. Chaque erreur revient après 1, 3 puis 7 jours, jusqu'à ce que tu la maîtrises.`
       : anyDone?'Rien d\'urgent. Une révision mélange des exercices des leçons déjà faites.':'Termine une première leçon : tes erreurs et le vocabulaire vu viendront ici.'}</p>
-    <p>Une révision ne coûte pas de cœurs et en rend un. +10 XP.</p>
+    <p>+10 XP par révision.</p>
     <button class="btn gold" id="revGo" ${(due.length||anyDone)?'':'disabled'}>Lancer une révision</button></div>`;
   if(all.length){
     html+=`<h3 class="section-h">Points à consolider (${all.length})</h3><div class="mist-list">`+
@@ -1517,6 +1492,52 @@ function renderReview(){
   }
   $('v-review').innerHTML=html;
   $('revGo').onclick=()=>startLesson('review');
+}
+
+/* ---------- Claude : deux moteurs ----------
+   Dans l'Artifact claude.ai : la capacité « sample » (le compte Claude de l'utilisateur).
+   Ailleurs (GitHub Pages) : l'API Anthropic via le SDK officiel, avec la clé de l'utilisateur si elle est renseignée. */
+const SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.128.0/+esm';
+let Anthropic = null, apiClient = null, apiClientKey = '';
+const apiKey = () => { try{ return localStorage.getItem(KEY+'-apikey')||''; }catch(e){ return ''; } };
+const aiAvailable = () => !!sampleFn || !!apiKey();
+const STR = {type:'string'};
+const strList = {type:'array', items:STR};
+const obj = props => ({type:'object', properties:props, required:Object.keys(props), additionalProperties:false});
+async function askClaude(prompt, schema, fast){
+  if(sampleFn) return sampleFn.json(prompt, fast ? {cache:false, modelTier:'quick'} : {cache:false});
+  const key = apiKey(); if(!key) throw {code:'no_engine'};
+  if(!Anthropic){ try{ Anthropic = (await import(SDK_URL)).default; }catch(e){ throw {code:'sdk_load'}; } }
+  if(!apiClient || apiClientKey!==key){ apiClient = new Anthropic({apiKey:key, dangerouslyAllowBrowser:true}); apiClientKey = key; }
+  let r;
+  try{
+    r = await apiClient.beta.messages.create({
+      model:'claude-opus-5-5', max_tokens:8000,
+      betas:['server-side-fallback-2026-07-01'], fallbacks:'default',
+      output_config:{effort: fast ? 'low' : 'medium', format:{type:'json_schema', schema}},
+      messages:[{role:'user', content:prompt}],
+    });
+  }catch(e){
+    if(e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) throw {code:'bad_key'};
+    if(e instanceof Anthropic.RateLimitError) throw {code:'rate_limited'};
+    if(e instanceof Anthropic.APIConnectionError) throw {code:'offline'};
+    throw {code:'api_error'};
+  }
+  if(r.stop_reason==='refusal') throw {code:'refusal'};
+  if(r.stop_reason==='max_tokens') throw {code:'bad_output'};
+  try{ return JSON.parse(r.content.filter(b=>b.type==='text').map(b=>b.text).join('')); }catch(e){ throw {code:'bad_output'}; }
+}
+function aiErr(e){
+  const c = e && e.code;
+  return ({
+    not_granted:'Accès à Claude refusé pour cette session. Recharge la page pour réessayer.',
+    rate_limited:'Trop de demandes rapprochées. Attends une minute avant de relancer.',
+    bad_key:'La clé API est refusée. Vérifie-la dans Profil.',
+    offline:'Pas de connexion à Claude. Vérifie ta connexion internet.',
+    sdk_load:'Impossible de charger la bibliothèque Claude. Vérifie ta connexion internet.',
+    refusal:'Claude a décliné cette réplique. Reformule-la.',
+    no_engine:'Ajoute ta clé API Anthropic dans Profil pour discuter avec Claude.',
+  })[c] || 'Claude n\'a pas pu répondre. Réessaie dans un instant.';
 }
 
 /* ---------- Coach (Claude) ---------- */
@@ -1539,6 +1560,7 @@ function renderCoach(){
   $('coachGo').onclick=()=>runCoach(sc);
   if(coachResult) drawCoach(coachResult);
 }
+const COACH_SCHEMA = obj({score:{type:'integer'}, corrected:STR, issues:{type:'array', items:obj({original:STR, fix:STR, why:STR})}, tip:STR, phrase:STR});
 async function runCoach(sc){
   const text=$('coachText').value.trim();
   if(text.length<15){ coachErr='Écris au moins une phrase complète.'; return renderCoach(); }
@@ -1550,23 +1572,19 @@ Learner's text:
 """
 ${text}
 """
-Return ONLY valid JSON, no text around it, in this exact shape:
-{"score": integer 0-10 for clarity, correctness and professional tone,
- "corrected": "a corrected, natural version in English, same intent and similar length",
- "issues": [{"original": "faulty excerpt", "fix": "correction", "why": "short explanation IN FRENCH"}],
- "tip": "one actionable tip IN FRENCH to improve",
- "phrase": "one idiomatic English phrase useful in this situation"}
-At most 5 issues, most important first. Empty issues array if the text is already correct.`;
+Return JSON with:
+- "score": integer 0-10 for clarity, correctness and professional tone
+- "corrected": a corrected, natural version in English, same intent and similar length
+- "issues": at most 5 objects {"original": faulty excerpt, "fix": correction, "why": short explanation IN FRENCH}, most important first; empty if the text is already correct
+- "tip": one actionable tip IN FRENCH to improve
+- "phrase": one idiomatic English phrase useful in this situation`;
   try{
-    const r = await sampleFn.json(prompt, {cache:false});
+    const r = await askClaude(prompt, COACH_SCHEMA, false);
     if(!r || typeof r!=='object' || typeof r.corrected!=='string') throw {code:'bad_output'};
     coachResult={score:Math.max(0,Math.min(10,Math.round(+r.score||0))), corrected:r.corrected, issues:Array.isArray(r.issues)?r.issues.slice(0,5):[], tip:String(r.tip||''), phrase:String(r.phrase||'')};
     addXp(5); save(); renderTop();
   }catch(e){
-    const c=e&&e.code;
-    coachErr = c==='not_granted' ? 'Accès à Claude refusé pour cette session. Recharge la page pour réessayer.'
-      : c==='rate_limited' ? 'Trop de demandes rapprochées. Attends une minute avant de relancer.'
-      : 'La correction n\'a pas abouti. Relance dans un instant.';
+    coachErr = aiErr(e);
   }
   coachBusy=false; renderCoach();
 }
@@ -1581,10 +1599,12 @@ function drawCoach(r){
 }
 
 /* ---------- Onglet Oral ---------- */
-let AIC = null;
+let AIC = null, customTopic = '';
+const TURN_SCHEMA = obj({reply:STR, feedback:STR, better:STR, end:{type:'boolean'}});
+const SUMMARY_SCHEMA = obj({strengths:strList, improve:strList, phrases:strList});
 function oralNote(){
   if(useMic()) return `Micro du navigateur, accent ${S.settings.accent==='en-GB'?'britannique':'américain'}. Le navigateur demande l'autorisation au premier essai.`;
-  if(FRAMED) return `Ici, tu parles avec la dictée de ton clavier : touche le champ de réponse, puis l'icône micro du clavier. Pour parler directement dans l'app avec un score de prononciation, ouvre la <a href="${ONLINE_URL}" target="_blank" rel="noopener">version en ligne</a>.`;
+  if(FRAMED) return `Ici, tu parles avec la dictée de ton clavier : touche le champ de réponse, puis l'icône micro du clavier. Pour parler directement dans l'app, ouvre la <a href="${ONLINE_URL}" target="_blank" rel="noopener">version en ligne</a>.`;
   if(!SRec) return 'Ce navigateur ne propose pas la reconnaissance vocale : utilise la dictée de ton clavier, ou ouvre l\'app dans Chrome ou Safari.';
   return 'Mode dictée du clavier (modifiable dans Profil).';
 }
@@ -1593,64 +1613,97 @@ function renderOral(){
   const item = (kind,o,color,icon,count) => `<button class="oitem" data-k="${kind}" data-id="${o.id}">
       <span class="oi" style="background:${color}">${icon}</span><div><b>${esc(o.t)}</b><span>${esc(o.d)}</span></div>
       ${count?`<span class="ok-mark" title="Fait ${count} fois">${I.check}</span>`:''}</button>`;
-  let html = `<div class="card"><h2>À l'oral</h2><p>Écoute, réponds à voix haute, recommence. Dix minutes par jour suffisent pour gagner en aisance.</p>
-    <p class="note">${oralNote()}</p></div>`;
-  if(sampleFn) html += `<h3 class="section-h">Conversation libre avec Claude</h3>
-    <p class="sub">Claude joue ton interlocuteur, te répond à voix haute et corrige chacune de tes répliques.</p>
-    <div class="olist">${AI_SCEN.map(o=>item('ai',o,'#7A55C9',I.coach,0)).join('')}</div>`;
+  let html = `<div class="card"><h2>À l'oral</h2><p>Discute, écoute, réponds à voix haute. Autant que tu veux.</p><p class="note">${oralNote()}</p></div>
+    <h3 class="section-h">Discussions avec Claude</h3>`;
+  if(aiAvailable()){
+    html += `<p class="sub">Claude joue ton interlocuteur et te répond à voix haute${useMic()?', puis réactive le micro tout seul : tu parles comme au téléphone':''}. Il corrige tes répliques et fait un bilan à la fin.</p>
+      <div class="olist">${AI_SCEN.map(o=>item('ai',o,'#7A55C9',I.coach,0)).join('')}
+      <div class="oitem custom"><span class="oi" style="background:#7A55C9">${I.coach}</span><div class="custom-in">
+        <label for="topicIn"><b>Sujet de ton choix</b></label>
+        <div class="custom-row"><input id="topicIn" type="text" placeholder="Ex. : mes vacances, le rugby, l'IA…" value="${esc(customTopic)}"><button class="btn small" id="topicGo">Discuter</button></div>
+      </div></div></div>`;
+  } else {
+    html += `<div class="card"><p>Pour discuter avec Claude ici, ajoute ta clé API Anthropic dans Profil. Elle reste dans ce navigateur, et chaque discussion coûte quelques centimes sur ton compte Anthropic.</p>
+      <p>Sans clé, les discussions marchent dans la version claude.ai de l'app.</p><button class="btn small" id="toProfile">Ajouter ma clé</button></div>`;
+  }
   html += `<h3 class="section-h">Dialogues guidés</h3><p class="sub">Une situation, cinq répliques. On te dit quoi exprimer, tu le dis en anglais.</p>
     <div class="olist">${DIALOGS.map(o=>item('dialog',o,o.color,I.mic,S.oral.d[o.id])).join('')}</div>
     <h3 class="section-h">Prononciation</h3><p class="sub">Les sons et les mots qui trahissent l'accent français.</p>
     <div class="olist">${PRONUN.map(o=>item('pron',o,'#2E7FB8',I.speaker,S.oral.p[o.id])).join('')}</div>`;
   $('v-oral').innerHTML = html;
-  $('v-oral').querySelectorAll('.oitem').forEach(b=>b.onclick=()=>{
+  $('v-oral').querySelectorAll('button.oitem').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k, id=b.dataset.id;
-    if(k==='ai') startAIC(id); else startLesson(k, id);
+    if(k==='ai') startAIC(AI_SCEN.find(x=>x.id===id)); else startLesson(k, id);
+  });
+  if($('toProfile')) $('toProfile').onclick = () => setView('profile');
+  if($('topicIn')){
+    $('topicIn').oninput = e => { customTopic = e.target.value; };
+    const go = () => { const t=customTopic.trim(); if(!t) return $('topicIn').focus();
+      startAIC({id:'custom', t:'Sujet : '+t, d:'Discussion libre sur le sujet que tu as choisi.',
+        role:`a friendly, curious English-speaking conversation partner. The learner chose this topic (it may be written in French): "${t}". Talk about it naturally, share your own views and ask about theirs.`,
+        opener:'Sounds like a great topic! So, tell me, what do you think about it?'}); };
+    $('topicGo').onclick = go;
+    $('topicIn').onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); go(); } };
+  }
+}
+function startAIC(sc){
+  AIC = {sc, turns:[{who:'them', text:sc.opener}], busy:false, ended:false, summary:null, err:'', hide:false, xp:0};
+  renderAIC(); window.scrollTo(0,0); themSays(sc.opener);
+}
+/* Claude parle ; en mains libres, le micro se rouvre quand il a fini. */
+function themSays(text){
+  const a = AIC;
+  speak(text, null, () => {
+    if(AIC!==a || a.ended || a.busy || currentView!=='oral' || lessonOpen) return;
+    if(useMic() && S.settings.handsFree){ const m=document.querySelector('#aicIn .mic'); if(m && !m.classList.contains('live')) m.click(); }
   });
 }
-function startAIC(id){
-  const sc = AI_SCEN.find(x=>x.id===id);
-  AIC = {sc, turns:[{who:'them', text:sc.opener}], busy:false, ended:false, summary:null, err:'', hide:false, xp:0};
-  renderAIC(); window.scrollTo(0,0); speak(sc.opener);
-}
 const scrollEnd = () => window.scrollTo(0, document.documentElement.scrollHeight);
-function aiErr(e){
-  const c = e && e.code;
-  return c==='not_granted' ? 'Accès à Claude refusé pour cette session. Recharge la page pour réessayer.'
-    : c==='rate_limited' ? 'Trop de demandes rapprochées. Attends une minute avant de relancer.'
-    : 'Claude n\'a pas pu répondre. Renvoie ta réplique dans un instant.';
-}
+function lastThem(){ const t=[...AIC.turns].reverse().find(x=>x.who==='them'); return t ? t.text : ''; }
 function renderAIC(){
   const a = AIC;
+  const fix = S.settings.liveFix;
   let html = `<div class="aic-bar"><button class="btn small ghost" id="aicQuit">Quitter</button>
-      <button class="linkbtn" id="aicHide">${a.hide?'Afficher le texte':'Masquer le texte (écoute pure)'}</button></div>
+      <div class="aic-opts">
+        ${useMic()?`<label class="mini-tog"><input type="checkbox" id="aicHands" ${S.settings.handsFree?'checked':''}> Mains libres</label>`:''}
+        <label class="mini-tog"><input type="checkbox" id="aicFix" ${fix?'checked':''}> Corriger en direct</label>
+        <label class="mini-tog"><input type="checkbox" id="aicHide" ${a.hide?'checked':''}> Masquer son texte</label>
+      </div></div>
     <div class="card aic-head"><h2>${esc(a.sc.t)}</h2><p>${esc(a.sc.d)}</p></div><div class="chat">`;
   a.turns.forEach(t=>{
     if(t.who==='them'){ html += chatMsg('them', t.text, a.hide); return; }
     html += chatMsg('me', t.text);
-    if(t.feedback || t.better) html += `<div class="fbk">${t.feedback?`<div>${esc(t.feedback)}</div>`:''}
+    if(fix && (t.feedback || t.better)) html += `<div class="fbk">${t.feedback?`<div>${esc(t.feedback)}</div>`:''}
       ${t.better?`<div class="fbk-better">${sayBtn(t.better,'inline')}<span><b>Plus naturel :</b> ${esc(t.better)}</span></div>`:''}</div>`;
   });
   if(a.busy) html += `<div class="msg them"><div>…</div></div>`;
   html += '</div>';
   if(!a.ended){
     const n = a.turns.filter(t=>t.who==='me').length;
-    html += `${a.busy?'':'<div id="aicIn"></div>'}<div class="aic-actions"><button class="btn small" id="aicSend" hidden>Envoyer</button>
+    html += `${a.busy?'':`<div class="replay"><button class="btn small ghost" id="rpt">Répéter</button><button class="btn small ghost" id="slow">Plus lentement</button></div><div id="aicIn"></div>`}
+      <div class="aic-actions"><button class="btn small" id="aicSend" hidden>Envoyer</button>
       <button class="btn small ghost" id="aicEnd" ${n&&!a.busy?'':'disabled'}>Terminer et voir le bilan</button></div>
-      ${a.suggestEnd?'<p class="sub">La conversation arrive à sa fin : tu peux voir ton bilan.</p>':''}`;
+      ${a.suggestEnd?'<p class="sub">La discussion arrive à sa fin : tu peux voir ton bilan, ou continuer.</p>':''}`;
   } else if(!a.summary){
     html += `<p class="sub">Claude prépare ton bilan…</p>`;
   } else {
     const list = (title, arr) => arr.length ? `<div><b>${title}</b><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+    const fixes = a.turns.filter(t=>t.who==='me' && t.better && norm(t.better).replace(/[^a-z0-9 ]/g,'')!==norm(t.text).replace(/[^a-z0-9 ]/g,''));
     html += `<div class="card coach-out"><h2>Bilan · +${a.xp} XP</h2>${list('Points forts', a.summary.strengths)}${list('À travailler', a.summary.improve)}
-      ${a.summary.phrases.length?`<div><b>Tournures à retenir</b>${a.summary.phrases.map(p=>`<div class="fbk-better">${sayBtn(p,'inline')}<span>${esc(p)}</span></div>`).join('')}</div>`:''}</div>
-      <button class="btn" id="aicAgain">Nouvelle conversation</button>`;
+      ${a.summary.phrases.length?`<div><b>Tournures à retenir</b>${a.summary.phrases.map(p=>`<div class="fbk-better">${sayBtn(p,'inline')}<span>${esc(p)}</span></div>`).join('')}</div>`:''}
+      ${fixes.length?`<div><b>Tes répliques, en plus naturel</b>${fixes.map(t=>`<div class="issue"><s>${esc(t.text)}</s><div class="fbk-better">${sayBtn(t.better,'inline')}<ins>${esc(t.better)}</ins></div></div>`).join('')}</div>`:''}</div>
+      <div class="aic-actions"><button class="btn" id="aicAgain">Nouvelle discussion</button><button class="btn ghost" id="aicSame">Recommencer ce sujet</button></div>`;
   }
   if(a.err) html += `<p class="err-line">${esc(a.err)}</p>`;
   $('v-oral').innerHTML = html;
-  $('aicQuit').onclick = () => { stopRec(); AIC=null; renderOral(); };
-  $('aicHide').onclick = () => { a.hide=!a.hide; renderAIC(); };
-  if($('aicAgain')) $('aicAgain').onclick = () => { AIC=null; renderOral(); };
+  $('aicQuit').onclick = () => { stopRec(); try{ speechSynthesis.cancel(); }catch(e){} AIC=null; renderOral(); };
+  $('aicHide').onchange = e => { a.hide=e.target.checked; renderAIC(); };
+  $('aicFix').onchange = e => { S.settings.liveFix=e.target.checked; save(); renderAIC(); };
+  if($('aicHands')) $('aicHands').onchange = e => { S.settings.handsFree=e.target.checked; save(); };
+  if($('rpt')) $('rpt').onclick = () => themSays(lastThem());
+  if($('slow')) $('slow').onclick = () => speak(lastThem(), 0.7);
+  if($('aicAgain')) $('aicAgain').onclick = () => { AIC=null; renderOral(); window.scrollTo(0,0); };
+  if($('aicSame')) $('aicSame').onclick = () => startAIC(a.sc);
   if($('aicEnd')) $('aicEnd').onclick = aicEnd;
   if($('aicIn')){
     const ctl = speakInput($('aicIn'), alts=>aicSend(alts[0]));
@@ -1661,39 +1714,42 @@ async function aicSend(text){
   const a = AIC; if(!a || a.busy || a.ended) return;
   a.turns.push({who:'me', text}); a.busy=true; a.err=''; renderAIC(); scrollEnd();
   const transcript = a.turns.map(t=>(t.who==='them'?'Partner':'Learner')+': '+t.text).join('\n');
-  const prompt = `You are role-playing in a spoken business English practice.
+  const prompt = `You are the conversation partner in a spoken English practice session.
 Your role: ${a.sc.role}
-The learner is a French-speaking professional (level B1-B2) practising speaking. Their lines come from speech recognition or phone dictation, so ignore punctuation, capitalisation and obvious transcription glitches.
+The learner is a French-speaking professional (level B1-B2) who wants to get comfortable speaking English. Their lines come from speech recognition or phone dictation, so ignore punctuation, capitalisation and obvious transcription glitches.
 Conversation so far:
 ${transcript}
-Return ONLY valid JSON, no text around it:
-{"reply": "your next line, in role: natural spoken English, 1 or 2 short sentences, usually ending with a question so the learner keeps talking",
- "feedback": "in French, one short sentence about the learner's LAST line: the main mistake, or a brief compliment if it was natural",
- "better": "a more natural way to say the learner's last line in spoken English (repeat it if it was already natural)",
- "end": false}
-Set "end" to true only when the conversation has reached a natural conclusion.`;
+Return JSON with:
+- "reply": your next line, in role. Natural spoken English, 1 or 2 short sentences, usually ending with a question so the learner keeps talking.
+- "feedback": in French, one short sentence about the learner's LAST line: the main mistake, or a brief compliment if it was natural.
+- "better": a more natural way to say the learner's last line in spoken English (repeat it unchanged if it was already natural).
+- "end": true only when the conversation has reached a natural conclusion.`;
   try{
-    const r = await sampleFn.json(prompt, {cache:false, modelTier:'quick'});
+    const r = await askClaude(prompt, TURN_SCHEMA, true);
     if(!r || typeof r.reply!=='string') throw {code:'bad_output'};
     const me = a.turns[a.turns.length-1]; me.feedback=String(r.feedback||''); me.better=String(r.better||'');
     a.turns.push({who:'them', text:r.reply}); a.suggestEnd = !!r.end;
-    speak(r.reply);
+    a.busy=false;
+    if(AIC===a && currentView==='oral'){ renderAIC(); scrollEnd(); }
+    themSays(r.reply);
+    return;
   }catch(e){ a.turns.pop(); a.err = aiErr(e); }
   a.busy=false;
   if(AIC===a && currentView==='oral'){ renderAIC(); scrollEnd(); }
 }
 async function aicEnd(){
   const a = AIC; if(!a || a.busy) return;
-  stopRec(); a.ended=true; a.err='';
+  stopRec(); try{ speechSynthesis.cancel(); }catch(e){}
+  a.ended=true; a.err='';
   const n = a.turns.filter(t=>t.who==='me').length;
-  a.xp = Math.min(20, 2*n); addXp(a.xp); S.oral.ai=(S.oral.ai||0)+1; save(); renderTop();
+  a.xp = Math.min(30, 3*n); addXp(a.xp); S.oral.ai=(S.oral.ai||0)+1; save(); renderTop();
   renderAIC(); scrollEnd();
   const transcript = a.turns.map(t=>(t.who==='them'?'Partner':'Learner')+': '+t.text).join('\n');
   const arr = v => Array.isArray(v) ? v.map(String).slice(0,3) : [];
   try{
-    const r = await sampleFn.json(`You coach a French-speaking professional on spoken business English (B1-B2). Here is a role-play they just did (their lines come from speech recognition):
+    const r = await askClaude(`You coach a French-speaking professional on spoken English (B1-B2). Here is a conversation they just had (their lines come from speech recognition):
 ${transcript}
-Return ONLY valid JSON: {"strengths": ["up to 3 short points IN FRENCH"], "improve": ["up to 3 short, concrete points IN FRENCH"], "phrases": ["up to 3 natural English phrases they could reuse in this situation"]}`, {cache:false});
+Return JSON with "strengths" (up to 3 short points IN FRENCH), "improve" (up to 3 short, concrete points IN FRENCH) and "phrases" (up to 3 natural English phrases they could reuse in this kind of conversation).`, SUMMARY_SCHEMA, false);
     a.summary = {strengths:arr(r&&r.strengths), improve:arr(r&&r.improve), phrases:arr(r&&r.phrases)};
   }catch(e){ a.summary = {strengths:[], improve:[], phrases:[]}; a.err = aiErr(e); }
   if(AIC===a && currentView==='oral'){ renderAIC(); scrollEnd(); }
@@ -1727,8 +1783,10 @@ function renderProfile(){
       ${tog('sSpeakL','Exercices oraux dans les leçons','Lire à voix haute et traduire à l\'oral',S.settings.speakInLessons)}
       ${micPossible?`<div><label>Pour répondre à l'oral</label>${seg('sInput',['mic','type'],S.settings.input,v=>v==='mic'?'Micro du navigateur':'Dictée du clavier')}</div>`:''}
       ${tog('sSound','Effets sonores','Bonne et mauvaise réponse',S.settings.sound)}
-      ${tog('sInf','Cœurs illimités','Les erreurs ne coûtent plus de cœur',S.settings.infinite)}
-      ${tog('sUnlock','Tout débloquer','Accès direct à toutes les unités',S.settings.unlockAll)}
+      ${sampleFn?'':`<div><label for="sKey">Clé API Anthropic (discussions et coach)</label>
+        <div class="custom-row"><input id="sKey" type="password" autocomplete="off" spellcheck="false" placeholder="${apiKey()?'Clé enregistrée':'sk-ant-…'}"><button class="btn small" id="sKeySave">Enregistrer</button></div>
+        <span class="hint2">${apiKey()?'Une clé est enregistrée dans ce navigateur. <button class="linkbtn" id="sKeyDel">Supprimer la clé</button>'
+          :'Facultatif. Crée une clé sur console.anthropic.com. Elle reste dans ce navigateur et sert seulement à appeler Claude. Chaque discussion coûte quelques centimes sur ton compte Anthropic.'}</span></div>`}
       <div class="sync-note ${cloudRef?'cloud':''}"><i></i>${cloudRef?'Progression enregistrée sur ton compte Claude, retrouvée sur tous tes appareils.':'Progression enregistrée dans ce navigateur.'}</div>
       <div><button class="linkbtn" id="sReset">Remettre la progression à zéro</button></div>
     </div>`;
@@ -1736,7 +1794,10 @@ function renderProfile(){
     if(key==='accent'||key==='rate') speak('Nice to meet you.'); });
   bindSeg('sGoal','goal',Number); bindSeg('sAccent','accent',String); bindSeg('sRate','rate',Number); bindSeg('sInput','input',String);
   const bindTog=(id,key)=>$(id)&&($(id).onchange=e=>{ S.settings[key]=e.target.checked; save(); renderTop(); });
-  bindTog('sAuto','autoread'); bindTog('sSpeakL','speakInLessons'); bindTog('sSound','sound'); bindTog('sInf','infinite'); bindTog('sUnlock','unlockAll');
+  bindTog('sAuto','autoread'); bindTog('sSpeakL','speakInLessons'); bindTog('sSound','sound');
+  if($('sKeySave')) $('sKeySave').onclick=()=>{ const v=$('sKey').value.trim(); if(!v) return $('sKey').focus();
+    try{ localStorage.setItem(KEY+'-apikey', v); }catch(e){} renderAll(); };
+  if($('sKeyDel')) $('sKeyDel').onclick=()=>{ try{ localStorage.removeItem(KEY+'-apikey'); }catch(e){} apiClient=null; renderAll(); };
   $('sReset').onclick=()=>{
     openSheet(`<div class="eyebrow">Réinitialiser</div><h3>Tout effacer ?</h3><p>XP, série, leçons terminées et points à revoir seront supprimés. Tes réglages sont conservés.</p>
       <div class="row"><button class="btn ko" id="shYes">Effacer ma progression</button><button class="btn ghost" id="shNo">Annuler</button></div>`);
@@ -1757,7 +1818,7 @@ initCloud();
   try{
     if(!window.claude || typeof window.claude.use!=='function') return;
     const s = await claude.use('sample');
-    if(s){ sampleFn=s; coachAvailable=true; if(!lessonOpen) renderAll(); }
+    if(s){ sampleFn=s; if(!lessonOpen) renderAll(); }
   }catch(e){}
 })();
 </script>
