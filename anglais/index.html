@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anglais Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: one narrow column (path of lesson nodes), sticky stat bar on top, tab bar at the bottom,
+   lessons open as a full-screen sheet with a check bar pinned to the bottom. */
+:root{
+  --bg:#EEF2F8; --surface:#FFFFFF; --sunk:#E3E9F2; --line:#D3DBE7;
+  --ink:#1E3A64; --ink-2:#56688A; --ink-3:#8C9AB3;
+  --primary:#1E3A64; --primary-ledge:#0F2344; --on-primary:#FFFFFF;
+  --gold:#E89A1E; --gold-soft:#FCEFD6;
+  --ok:#23895B; --ok-soft:#DDF3E8; --ok-ledge:#176641;
+  --ko:#C8503F; --ko-soft:#FBE4DF; --ko-ledge:#99382A;
+  --heart:#E0475C;
+  --shadow:rgba(30,58,100,.14);
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1524; --surface:#172136; --sunk:#111A2B; --line:#2A3853;
+    --ink:#E6ECF7; --ink-2:#A3B3D0; --ink-3:#6E7F9E;
+    --primary:#7FA6F5; --primary-ledge:#4C73C4; --on-primary:#0E1524;
+    --gold:#F2B04A; --gold-soft:#3A2E17;
+    --ok:#4CC08A; --ok-soft:#14322A; --ok-ledge:#2E8A5F;
+    --ko:#F07A68; --ko-soft:#3A1E1C; --ko-ledge:#B4503F;
+    --heart:#FF6B80; --shadow:rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1524; --surface:#172136; --sunk:#111A2B; --line:#2A3853;
+  --ink:#E6ECF7; --ink-2:#A3B3D0; --ink-3:#6E7F9E;
+  --primary:#7FA6F5; --primary-ledge:#4C73C4; --on-primary:#0E1524;
+  --gold:#F2B04A; --gold-soft:#3A2E17;
+  --ok:#4CC08A; --ok-soft:#14322A; --ok-ledge:#2E8A5F;
+  --ko:#F07A68; --ko-soft:#3A1E1C; --ko-ledge:#B4503F;
+  --heart:#FF6B80; --shadow:rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+svg{display:block}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:2px solid var(--line)}
+.top-in{max-width:560px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:-.01em;flex:1;min-width:0}
+.brand small{display:block;font-family:var(--f-body);font-weight:400;font-size:11.5px;color:var(--ink-2);letter-spacing:.02em}
+.stat-pill{display:flex;align-items:center;gap:5px;font-weight:700;font-size:15px}
+.stat-pill svg{width:22px;height:22px}
+.stat-pill.flame{color:var(--gold)} .stat-pill.flame.cold{color:var(--ink-3)}
+.stat-pill.xp{color:var(--primary)}
+
+/* ---------- views ---------- */
+main{max-width:560px;margin:0 auto;padding:16px 16px 110px}
+.view[hidden]{display:none}
+
+.today{background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;margin-bottom:22px}
+.today-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.today h2{font-size:17px}
+.today .muted{font-size:13px;color:var(--ink-2)}
+.bar{height:12px;border-radius:8px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:8px;transition:width .4s ease}
+.today .cta-review{justify-self:start}
+
+.unit{margin-bottom:30px}
+.unit-banner{border-radius:var(--r);padding:16px 18px;color:#fff;display:grid;gap:4px;position:relative;overflow:hidden}
+.unit-banner .eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;opacity:.9;display:flex;gap:8px;align-items:center}
+.cefr{background:rgba(255,255,255,.22);border-radius:6px;padding:1px 7px;font-weight:700;letter-spacing:.04em}
+.unit-banner h2{font-size:22px}
+.unit-banner p{margin:0;font-size:14px;opacity:.92}
+.unit-banner .uprog{font-size:12.5px;opacity:.9;margin-top:4px}
+
+.path{display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 6px}
+.node-wrap{position:relative;display:flex;flex-direction:column;align-items:center}
+.node-wrap.has-tag{margin-top:40px}
+.node{width:74px;height:70px;border-radius:50%;border:none;background:var(--uc);color:#fff;
+  box-shadow:0 7px 0 var(--ucl);display:grid;place-items:center;transition:transform .08s,box-shadow .08s;position:relative}
+.node svg{width:32px;height:32px}
+.node:active{transform:translateY(5px);box-shadow:0 2px 0 var(--ucl)}
+.node.locked{background:var(--sunk);color:var(--ink-3);box-shadow:0 7px 0 var(--line)}
+.node.done{background:var(--gold);box-shadow:0 7px 0 #B8730C;color:#fff}
+.node.current::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:4px solid var(--uc);opacity:.35;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(.96);opacity:.45}50%{transform:scale(1.06);opacity:.15}}
+.node-tag{position:absolute;bottom:calc(100% + 14px);background:var(--surface);border:2px solid var(--line);color:var(--uc);
+  font-weight:700;font-size:13px;padding:5px 11px;border-radius:10px;white-space:nowrap;letter-spacing:.04em;text-transform:uppercase}
+.node-tag::after{content:"";position:absolute;left:50%;top:100%;width:10px;height:10px;background:var(--surface);
+  border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:translate(-50%,-5px) rotate(45deg)}
+.node-label{font-size:12.5px;color:var(--ink-2);margin-top:12px;text-align:center;max-width:140px;line-height:1.3}
+
+/* ---------- buttons ---------- */
+.btn{border:none;border-radius:13px;padding:13px 20px;font-weight:700;font-size:15.5px;letter-spacing:.03em;text-transform:uppercase;
+  background:var(--primary);color:var(--on-primary);box-shadow:0 4px 0 var(--primary-ledge);transition:transform .06s,box-shadow .06s}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--primary-ledge)}
+.btn:disabled{background:var(--sunk);color:var(--ink-3);box-shadow:0 4px 0 var(--line);cursor:default}
+.btn.ghost{background:var(--surface);color:var(--ink);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.gold{background:var(--gold);color:#2B1B00;box-shadow:0 4px 0 #B8730C}
+.btn.ok{background:var(--ok);color:#fff;box-shadow:0 4px 0 var(--ok-ledge)}
+.btn.ko{background:var(--ko);color:#fff;box-shadow:0 4px 0 var(--ko-ledge)}
+.btn.small{padding:9px 14px;font-size:13.5px}
+.btn.block{width:100%}
+.linkbtn{background:none;border:none;color:var(--ink-2);text-decoration:underline;padding:6px;font-size:14px}
+
+/* ---------- bottom nav ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:2px solid var(--line);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.nav-in{max-width:560px;margin:0 auto;display:flex;justify-content:space-around}
+.nav button{background:none;border:2px solid transparent;border-radius:12px;padding:6px 6px;display:flex;flex-direction:column;
+  align-items:center;gap:2px;font-size:11.5px;font-weight:700;color:var(--ink-3);letter-spacing:.02em;position:relative;min-width:58px}
+.nav button svg{width:26px;height:26px}
+.nav button.on{color:var(--primary);border-color:var(--line);background:var(--sunk)}
+.nav .badge{position:absolute;top:2px;right:10px;background:var(--heart);color:#fff;border-radius:9px;font-size:10.5px;padding:0 5px;min-width:18px;text-align:center}
+
+/* ---------- sheets ---------- */
+.scrim{position:fixed;inset:0;background:rgba(10,18,34,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));
+  display:grid;gap:12px;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+.sheet .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-2)}
+.sheet h3{font-size:22px}
+.sheet p{margin:0;color:var(--ink-2)}
+.sheet .row{display:flex;gap:10px;flex-wrap:wrap}
+.sheet .row .btn{flex:1}
+
+/* ---------- lesson ---------- */
+.lesson{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px)}
+.l-head{max-width:640px;width:100%;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.iconbtn{background:none;border:none;color:var(--ink-3);padding:4px;border-radius:8px}
+.iconbtn svg{width:26px;height:26px}
+.l-prog{flex:1;height:16px;border-radius:9px;background:var(--sunk);overflow:hidden}
+.l-prog i{display:block;height:100%;width:0;background:var(--ok);border-radius:9px;transition:width .35s ease;
+  background-image:linear-gradient(rgba(255,255,255,.28),rgba(255,255,255,.28));background-size:100% 35%;background-repeat:no-repeat;background-position:0 30%}
+.l-hearts{display:flex;align-items:center}
+.l-kind{color:var(--ink-2);font-size:13px;font-weight:700;letter-spacing:.04em}
+.l-body{flex:1;overflow-y:auto;width:100%;max-width:640px;margin:0 auto;padding:8px 16px 24px}
+.l-foot{border-top:2px solid var(--line);padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--bg);transition:background .2s}
+.l-foot-in{max-width:640px;margin:0 auto;display:grid;gap:12px}
+.l-foot.ok{background:var(--ok-soft);border-color:transparent}
+.l-foot.ko{background:var(--ko-soft);border-color:transparent}
+.fb{display:grid;gap:4px}
+.fb[hidden]{display:none}
+.fb .fb-title{font-family:var(--f-display);font-weight:800;font-size:21px;display:flex;align-items:center;gap:8px}
+.l-foot.ok .fb-title{color:var(--ok)} .l-foot.ko .fb-title{color:var(--ko)}
+.fb .fb-sol{font-weight:700;font-size:16px}
+.l-foot.ko .fb-sol{color:var(--ko)}
+.fb .fb-ex{font-size:14px;color:var(--ink-2)}
+.fb .fb-title svg{width:26px;height:26px}
+
+.ex-title{font-family:var(--f-display);font-weight:800;font-size:23px;margin:10px 0 18px}
+.prompt{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+.bubble{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 15px;font-size:17px;position:relative;min-width:0}
+.say{flex:none;width:44px;height:44px;border-radius:12px;border:none;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;box-shadow:0 3px 0 var(--primary-ledge)}
+.say svg{width:24px;height:24px}
+.say.inline{width:34px;height:34px;border-radius:10px;box-shadow:0 2px 0 var(--primary-ledge)}
+.say.inline svg{width:19px;height:19px}
+
+.opts{display:grid;gap:11px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;
+  padding:13px 14px;box-shadow:0 3px 0 var(--line);font-size:16px}
+.opt .k{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:var(--ink-3);font-weight:700}
+.opt.sel{border-color:var(--primary);background:var(--sunk);box-shadow:0 3px 0 var(--primary)}
+.opt.sel .k{border-color:var(--primary);color:var(--primary)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);box-shadow:0 3px 0 var(--ok)}
+.opt.wrong{border-color:var(--ko);background:var(--ko-soft);box-shadow:0 3px 0 var(--ko)}
+.opt:disabled{cursor:default}
+
+.sentence{font-size:20px;line-height:1.9;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--ink-3);text-align:center;color:var(--primary);font-weight:700;padding:0 6px;line-height:1.3}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.chip{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:9px 14px;box-shadow:0 3px 0 var(--line);font-size:16.5px}
+.chip.sel{border-color:var(--primary);box-shadow:0 3px 0 var(--primary);color:var(--primary);font-weight:700}
+.chip.ghost{visibility:hidden}
+
+.answer{min-height:122px;border-top:2px solid var(--line);border-bottom:2px solid var(--line);padding:12px 0;margin-bottom:22px;
+  display:flex;flex-wrap:wrap;gap:9px;align-content:flex-start;
+  background-image:linear-gradient(transparent 59px,var(--line) 59px,var(--line) 61px,transparent 61px);background-size:100% 61px}
+.bank{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+.tok{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:8px 13px;box-shadow:0 3px 0 var(--line);font-size:17px}
+.tok.used{background:var(--sunk);color:transparent;box-shadow:none;border-color:var(--sunk)}
+.tok:disabled{cursor:default}
+
+.listen-btns{display:flex;gap:14px;justify-content:center;margin:6px 0 22px}
+.say.big{width:96px;height:96px;border-radius:22px;box-shadow:0 6px 0 var(--primary-ledge)}
+.say.big svg{width:46px;height:46px}
+.say.slow{width:64px;height:64px;align-self:flex-end;border-radius:16px;font-weight:700;font-size:14px}
+
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pairs .col{display:grid;gap:10px;align-content:start}
+.pair{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:12px 10px;box-shadow:0 3px 0 var(--line);font-size:15px;min-height:58px;line-height:1.3}
+.pair.sel{border-color:var(--primary);box-shadow:0 3px 0 var(--primary);color:var(--primary)}
+.pair.matched{opacity:.35;box-shadow:none;border-color:var(--ok);color:var(--ok)}
+.pair.err{border-color:var(--ko);box-shadow:0 3px 0 var(--ko);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.done-screen{display:grid;gap:18px;justify-items:center;text-align:center;padding-top:28px}
+.done-screen h2{font-size:30px}
+.done-screen p{margin:0;color:var(--ink-2)}
+.done-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:420px}
+.tile{border-radius:14px;border:2px solid var(--tc);overflow:hidden;text-align:center}
+.tile .tl{background:var(--tc);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:4px}
+.tile .tv{font-family:var(--f-display);font-weight:800;font-size:24px;padding:10px 4px;color:var(--tc)}
+.medal{width:120px;height:120px}
+
+/* ---------- review / coach / profile ---------- */
+.card{background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px}
+.card h2{font-size:21px}
+.card p{margin:0;color:var(--ink-2)}
+.section-h{font-size:12.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-2);margin:26px 0 10px;font-family:var(--f-body);font-weight:700}
+.mist-list{display:grid;gap:8px}
+.mist{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:14.5px}
+.mist span{min-width:0}
+.mist em{font-style:normal;color:var(--ink-3);font-size:12.5px;flex:none}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.st{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.st svg{width:28px;height:28px;flex:none}
+.st b{font-family:var(--f-display);font-size:22px;display:block;line-height:1.1}
+.st span{font-size:12.5px;color:var(--ink-2)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:150px;padding-top:8px}
+.wk{display:grid;grid-template-rows:1fr auto auto;height:100%;gap:4px;text-align:center;font-size:12px;color:var(--ink-2)}
+.wk .col{display:flex;align-items:flex-end;justify-content:center}
+.wk .col i{display:block;width:70%;max-width:32px;border-radius:7px 7px 3px 3px;background:var(--primary);min-height:3px}
+.wk.goal .col i{background:var(--gold)}
+.wk.is-today b{color:var(--ink)}
+.wk.is-today span{color:var(--ink);font-weight:700}
+.set{display:grid;gap:16px}
+.set label{font-weight:700;font-size:14.5px;display:block;margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:7px 13px;font-size:14px;font-weight:700;color:var(--ink-2)}
+.seg button.on{border-color:var(--primary);color:var(--primary);background:var(--sunk)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px}
+.toggle small{display:block;color:var(--ink-2);font-size:12.5px;font-weight:400}
+.toggle input{width:22px;height:22px;accent-color:var(--primary);flex:none}
+.sync-note{font-size:13px;color:var(--ink-2);display:flex;gap:7px;align-items:center}
+.sync-note i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}
+.sync-note.cloud i{background:var(--ok)}
+
+.scen{display:grid;gap:8px}
+.scen button{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:11px 14px;font-size:14.5px;box-shadow:0 3px 0 var(--line)}
+.scen button.on{border-color:var(--primary);box-shadow:0 3px 0 var(--primary)}
+.scen button b{display:block;font-size:15px}
+.scen button span{color:var(--ink-2);font-size:13px}
+textarea{width:100%;min-height:150px;border:2px solid var(--line);border-radius:12px;padding:12px;font:16px/1.5 var(--f-body);background:var(--surface);color:var(--ink);resize:vertical}
+.coach-out{display:grid;gap:12px}
+.score{display:flex;align-items:baseline;gap:8px}
+.score b{font-family:var(--f-display);font-size:40px;color:var(--primary)}
+.corrected{background:var(--ok-soft);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;white-space:pre-wrap}
+.corrected div{min-width:0;flex:1}
+.issue{border-left:4px solid var(--ko);padding:4px 0 4px 12px;font-size:14.5px}
+.issue s{color:var(--ko)} .issue ins{text-decoration:none;color:var(--ok);font-weight:700}
+.issue p{margin:2px 0 0;color:var(--ink-2);font-size:13.5px}
+.tip{background:var(--gold-soft);border-radius:12px;padding:12px 14px;font-size:14.5px}
+.err-line{color:var(--ko);font-size:14px}
+/* oral */
+.foot-row{display:flex;gap:10px}
+.foot-row #lMain{flex:1}
+.mic-area{display:grid;justify-items:center;gap:10px;margin-top:10px}
+.mic{width:96px;height:96px;border-radius:50%;border:none;background:var(--ko);color:#fff;display:grid;place-items:center;box-shadow:0 6px 0 var(--ko-ledge);position:relative}
+.mic svg{width:44px;height:44px}
+.mic:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ko-ledge)}
+.mic.live::before{content:"";position:absolute;inset:-12px;border-radius:50%;border:4px solid var(--ko);opacity:.4;animation:pulse 1.1s ease-in-out infinite}
+.mic-hint{font-size:14px;color:var(--ink-2);text-align:center}
+.heard{min-height:26px;font-size:17px;color:var(--ink-2);text-align:center;font-style:italic;max-width:100%;overflow-wrap:anywhere}
+.dict{display:grid;gap:8px;width:100%;margin-top:6px}
+.dict input{width:100%;border:2px solid var(--line);border-radius:12px;padding:13px 14px;font:17px var(--f-body);background:var(--surface);color:var(--ink)}
+.dict small{color:var(--ink-2);font-size:13px;display:flex;gap:6px;align-items:flex-start}
+.dict small svg{width:16px;height:16px;flex:none;margin-top:2px}
+.bubble.target{font-size:20px;font-weight:700}
+.tipline{background:var(--gold-soft);border-radius:12px;padding:10px 14px;font-size:14.5px;margin-bottom:16px}
+.tipline.ctx{margin:2px 0 14px;font-size:14px}
+.skip{display:block;margin:20px auto 0}
+.fb-say{display:flex;gap:10px;align-items:flex-start}
+.fb-say span{min-width:0}
+.w-ok{color:var(--ok)} .w-ko{color:var(--ko);text-decoration:underline wavy;text-underline-offset:5px}
+.chat{display:grid;gap:10px;margin-bottom:16px}
+.msg{max-width:88%;padding:10px 14px;border-radius:16px;font-size:16px;display:flex;gap:10px;align-items:flex-start}
+.msg div{min-width:0}
+.msg.them{background:var(--surface);border:2px solid var(--line);justify-self:start;border-bottom-left-radius:4px}
+.msg.me{background:var(--primary);color:var(--on-primary);justify-self:end;border-bottom-right-radius:4px}
+.msg.hidden-text div{filter:blur(6px);user-select:none}
+.hintline{font-size:15.5px;margin-bottom:4px}
+.hintline b{color:var(--primary)}
+.hide-tg{padding:2px 0 8px}
+.fbk{justify-self:end;max-width:92%;font-size:13.5px;color:var(--ink-2);background:var(--gold-soft);border-radius:12px;padding:8px 12px;display:grid;gap:6px}
+.fbk b{color:var(--ink)}
+.fbk-better{display:flex;gap:8px;align-items:center;color:var(--ink)}
+.fbk-better span{min-width:0}
+.note{font-size:13.5px}
+.note a{color:var(--primary);font-weight:700}
+.sub{font-size:13.5px;color:var(--ink-2);margin:-4px 0 10px}
+.olist{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.oitem{display:flex;align-items:center;gap:14px;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 3px 0 var(--line)}
+.oitem:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.oitem .oi{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;color:#fff}
+.oitem .oi svg{width:24px;height:24px}
+.oitem>div{min-width:0}
+.oitem b{display:block;font-size:15.5px}
+.oitem div span{font-size:13px;color:var(--ink-2)}
+.oitem .ok-mark{margin-left:auto;color:var(--gold);flex:none;width:22px}
+.aic-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.aic-head{margin-bottom:14px}
+.aic-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+#aicAgain{margin-top:14px}
+.coach-out ul{margin:6px 0 0;padding-left:20px}
+.aic-opts{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:flex-end}
+.mini-tog{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);cursor:pointer}
+.mini-tog input{width:18px;height:18px;accent-color:var(--primary)}
+.replay{display:flex;gap:8px;justify-content:center;margin-bottom:6px}
+.oitem.custom{cursor:default}
+.custom-in{flex:1;display:grid;gap:8px}
+.custom-in label{cursor:pointer}
+.custom-row{display:flex;gap:8px}
+.custom-row input{flex:1;min-width:0;width:100%;border:2px solid var(--line);border-radius:10px;padding:9px 11px;font:15px var(--f-body);background:var(--surface);color:var(--ink)}
+.hint2{display:block;font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.45}
+.hint2 .linkbtn{padding:0;font-size:12.5px}
+.today .oral-cta{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:2px solid var(--line);padding-top:10px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:380px){.brand small{display:none}.top-in{gap:10px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Anglais Pro<small>Business English, 5 minutes par jour</small></div>
+    <div class="stat-pill flame" id="topStreak" title="Série de jours"></div>
+    <div class="stat-pill xp" id="topXp" title="XP total"></div>
+  </div>
+</header>
+
+<main>
+  <section class="view" id="v-path"></section>
+  <section class="view" id="v-oral" hidden></section>
+  <section class="view" id="v-review" hidden></section>
+  <section class="view" id="v-coach" hidden></section>
+  <section class="view" id="v-profile" hidden></section>
+</main>
+
+<nav class="nav" aria-label="Navigation">
+  <div class="nav-in" id="nav"></div>
+</nav>
+
+<div class="lesson" id="lesson" hidden>
+  <div class="l-head">
+    <button class="iconbtn" id="lQuit" aria-label="Quitter la leçon"></button>
+    <div class="l-prog" aria-hidden="true"><i id="lBar"></i></div>
+    <div class="l-hearts" id="lHearts"></div>
+  </div>
+  <div class="l-body" id="lBody"></div>
+  <div class="l-foot" id="lFoot">
+    <div class="l-foot-in">
+      <div class="fb" id="lFb" hidden></div>
+      <div class="foot-row"><button class="btn ghost" id="lAlt" hidden>Réessayer</button><button class="btn block" id="lMain" disabled>Vérifier</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="sheetHost"></div>
+
+<script>
+/* =====================================================================
+   CONTENU — 8 unités, 22 leçons. Explications en français.
+   M = QCM réponse anglaise, MF = QCM réponse française,
+   F = phrase à trou, O = phrase à reconstruire (FR -> EN)
+   ===================================================================== */
+const M  = (q,a,o,ex) => ({t:'mcq', q, a, o, ex, say:a});
+const MF = (q,a,o,ex) => ({t:'mcq', q, a, o, ex});
+const F  = (s,a,o,ex) => ({t:'fill', s, a, o, ex, say:s.replace('___',a)});
+const O  = (fr,en,ex) => ({t:'order', fr, en, ex, say:en});
+const L  = (id,title,vocab,items) => ({id,title,vocab,items});
+
+const UNITS = [
+{id:'u1', title:'Emails professionnels', level:'B1', color:'#3767D0', ledge:'#244A9E', desc:'Ouvrir, relancer, joindre un devis', lessons:[
+  L('u1l1','Ouvrir et conclure',
+    [['Cordialement','Kind regards'],['Je vous écris au sujet de','I\'m writing regarding'],['ci-joint','attached'],['N\'hésitez pas à','Feel free to'],['Dans l\'attente de votre réponse','I look forward to hearing from you']],
+    [F('I look forward to ___ from you.','hearing',['hear','have heard'],'Après « look forward to », le verbe prend -ing : « to » est ici une préposition.'),
+     MF('Formule d\'appel pour un destinataire dont vous ignorez le nom :','Dear Sir or Madam,',['Hi there!','Hello friend,'],'« Dear Sir or Madam » reste la norme. Si vous connaissez le nom : « Dear Ms Martin, ».'),
+     O('Je vous écris au sujet de votre demande de devis.','I\'m writing regarding your request for a quote.'),
+     M('Complétez : « Please find attached… »','the invoice for March.',['to the invoice for March.','with the invoice for March.'],'« Please find attached » est suivi directement du nom, sans préposition.'),
+     O('N\'hésitez pas à me contacter si vous avez des questions.','Feel free to contact me if you have any questions.'),
+     M('Quelle signature convient à un email client ?','Best regards,',['Cheers mate,','See ya,'],'« Best regards » ou « Kind regards » : neutres et professionnels.'),
+     F('Thank you ___ your quick reply.','for',['of','to'],'« Thank you for » + nom ou verbe en -ing.')]),
+  L('u1l2','Demander et relancer',
+    [['relancer','to follow up'],['une échéance','a deadline'],['dès que possible','as soon as possible'],['un rappel','a reminder'],['à votre convenance','at your convenience']],
+    [O('Je me permets de vous relancer concernant ma proposition.','I\'m following up on my proposal.','« Je me permets de » ne se traduit pas : l\'anglais va droit au but.'),
+     M('La formulation la plus polie pour demander un document :','Could you please send me the contract?',['Send me the contract.','I want the contract now.'],'« Could you please… » adoucit la demande. L\'impératif seul sonne sec.'),
+     F('I would be grateful if you ___ confirm by Friday.','could',['can','will'],'Structure au conditionnel : « I would be grateful if you could… ».'),
+     O('Pourriez-vous confirmer d\'ici vendredi ?','Could you confirm this by Friday?','« by » = au plus tard (d\'ici).'),
+     F('Just a quick ___ about our meeting tomorrow.','reminder',['remind','souvenir'],'« remind » est le verbe, « reminder » le nom. « souvenir » désigne un objet-souvenir.'),
+     M('Pas de réponse depuis une semaine. Comment ouvrez-vous la relance ?','I just wanted to follow up on my email from last week.',['Why haven\'t you answered me?','You forgot my email.'],'« I just wanted to follow up » est la formule de relance standard, neutre et sans reproche.'),
+     O('Je reviens vers vous dès que possible.','I\'ll get back to you as soon as possible.','Revenir vers quelqu\'un = « get back to someone ».')]),
+  L('u1l3','Devis, factures, paiements',
+    [['une facture','an invoice'],['un devis','a quote'],['un bon de commande','a purchase order'],['un acompte','a deposit'],['les conditions de paiement','payment terms']],
+    [M('Corrigez : « I send you the file. »','I\'m sending you the file.',['I sended you the file.','I am send you the file.'],'L\'action a lieu au moment où vous écrivez : présent continu. Autre option : « I\'ve attached the file ».'),
+     F('Payment is due ___ 30 days.','within',['in the','since'],'« within 30 days » = dans un délai de 30 jours.'),
+     O('Vous trouverez ci-joint notre devis.','Please find attached our quote.'),
+     M('« Un acompte de 30 % »','a 30% deposit',['a 30% account','a 30% advance count'],'« account » = un compte. Un acompte se dit « deposit » ou « down payment ».'),
+     O('Le bon de commande est en pièce jointe.','The purchase order is attached.'),
+     F('Could you send me an updated ___ with the new prices?','quote',['devise','cote'],'Devis = « quote » ou « quotation ». En anglais, « devise » est un verbe : concevoir.'),
+     MF('« Payment terms » désigne…','les conditions de paiement',['les termes anglais du paiement','la fin du paiement'],'Ex. : « Our payment terms are 30 days net. »')]),
+]},
+{id:'u2', title:'Téléphone et visio', level:'B1', color:'#14917F', ledge:'#0C6A5C', desc:'Se présenter, gérer la ligne, fixer un créneau', lessons:[
+  L('u2l1','Décrocher et se présenter',
+    [['Ne quittez pas','Hold on, please'],['Je vous le passe','I\'ll put you through'],['laisser un message','to leave a message'],['rappeler','to call back'],['C\'est de la part de qui ?','Who\'s calling, please?']],
+    [M('Au téléphone, comment vous présentez-vous ?','Hello, this is Guillaume from Myrmeo.',['Hello, here is Guillaume from Myrmeo.','Hello, I\'m calling me Guillaume.'],'Au téléphone : « this is… ». « Here is » est un calque de « ici… ».'),
+     O('Puis-je parler au responsable, s\'il vous plaît ?','Could I speak to the manager, please?'),
+     F('She\'s not available right now. Can I take a ___?','message',['letter','mail'],'« Can I take a message? » est la formule consacrée.'),
+     O('Je vous rappelle dans dix minutes.','I\'ll call you back in ten minutes.'),
+     M('Votre interlocuteur parle trop vite. Vous dites :','Sorry, could you speak a bit more slowly?',['Speak slow please.','You talk too fast.'],'Commencer par « Sorry » rend la demande naturelle et polie.'),
+     F('Could you ___ that, please? The line is bad.','repeat',['reply','recall'],'« recall » = se souvenir ou rappeler un produit défectueux.'),
+     MF('« I\'ll put you through » signifie…','Je vous mets en relation.',['Je vous raccroche au nez.','Je vous fais passer un test.'],'Variante : « I\'ll transfer your call ».')]),
+  L('u2l2','Visio et soucis techniques',
+    [['Vous êtes en sourdine','You\'re on mute'],['partager mon écran','to share my screen'],['Vous m\'entendez ?','Can you hear me?'],['un lien de réunion','a meeting link'],['Ça coupe','You\'re breaking up']],
+    [O('Je pense que vous êtes en sourdine.','I think you\'re on mute.'),
+     M('Vous voulez montrer une présentation :','Let me share my screen.',['Let me divide my screen.','Let me part my screen.'],'« share » = partager. « divide » = diviser.'),
+     F('Sorry, you ___ out for a second. Could you repeat that?','cut',['cutted','cuts'],'« to cut out » = couper (le son). Verbe irrégulier : cut, cut, cut.'),
+     O('Pouvez-vous voir mon écran ?','Can you see my screen?'),
+     M('Vous arrivez en retard à une visio :','Sorry I\'m late, I had trouble connecting.',['Sorry for the retard.','Sorry, I was in delay.'],'« retard » est une insulte en anglais. Être en retard = « to be late ».'),
+     F('I\'ll send you the meeting ___ by email.','link',['lien','bond'],'Lien = « link ».'),
+     O('On fait une pause de cinq minutes ?','Shall we take a five-minute break?','Adjectif composé : « five-minute », sans s.')]),
+  L('u2l3','Fixer un rendez-vous',
+    [['planifier une réunion','to schedule a meeting'],['reporter','to postpone'],['annuler','to cancel'],['un créneau','a time slot'],['Ça vous convient ?','Does that work for you?']],
+    [O('Est-ce que mardi à 10 h vous conviendrait ?','Would Tuesday at 10 am work for you?'),
+     F('We need to ___ the meeting to next week.','postpone',['report','retard'],'« report » = rapporter, rendre compte. Reporter = « postpone », « reschedule » ou « push back ».'),
+     M('« Le 15 mars à 14 h »','on March 15th at 2 pm',['in March 15th at 2 pm','at March 15th on 2 pm'],'« on » + date ou jour, « at » + heure, « in » + mois ou année.'),
+     O('Je n\'ai aucun créneau libre jeudi.','I don\'t have any free slots on Thursday.'),
+     MF('« I\'m afraid I have to cancel » est…','une façon polie d\'annoncer une annulation',['l\'aveu d\'une peur','une menace'],'« I\'m afraid… » = « Je crains que… », pour adoucir une mauvaise nouvelle.'),
+     F('I\'m available ___ Monday and Wednesday.','on',['in','at'],'« on » devant un jour de la semaine.'),
+     M('Vous proposez deux options :','I\'m free on Monday afternoon or Wednesday morning. Which suits you best?',['Monday or Wednesday, you choose quick.','I\'m libre Monday or Wednesday.'],'« Which suits you best? » = « Qu\'est-ce qui vous arrange le mieux ? »')]),
+]},
+{id:'u3', title:'Réunions', level:'B1+', color:'#7A55C9', ledge:'#593A9B', desc:'Animer, donner son avis, répartir les actions', lessons:[
+  L('u3l1','Lancer et animer',
+    [['l\'ordre du jour','the agenda'],['le compte rendu','the minutes'],['passer au point suivant','to move on to the next item'],['prendre la parole','to take the floor'],['un tour de table','a round of introductions']],
+    [MF('En réunion, « the agenda » désigne…','l\'ordre du jour',['l\'agenda papier','le calendrier personnel'],'Un agenda personnel se dit « a diary » (UK) ou « a planner » (US).'),
+     O('Commençons, si tout le monde est là.','Let\'s get started, if everyone is here.'),
+     F('Let\'s move ___ to the next item.','on',['in','at'],'« move on to » = passer à.'),
+     O('Le but de cette réunion est de valider le budget.','The purpose of this meeting is to approve the budget.','Valider une décision = « approve ». « validate » s\'emploie plutôt pour des données.'),
+     M('Quelqu\'un s\'écarte du sujet. Vous dites :','Let\'s get back to the main point.',['Stop talking, please.','You are out of the subject.'],'« Être hors sujet » se dit « to be off topic ».'),
+     F('Who\'s going to take the ___ today?','minutes',['resume','report'],'« take the minutes » = rédiger le compte rendu. Un « résumé » (US) = un CV.'),
+     O('Je vais envoyer le compte rendu à tout le monde.','I\'ll send the minutes to everyone.')]),
+  L('u3l2','Donner son avis',
+    [['à mon avis','in my opinion'],['Je suis d\'accord','I agree'],['Je n\'en suis pas sûr','I\'m not sure about that'],['Tout à fait','Absolutely'],['Je vois ce que vous voulez dire','I see what you mean']],
+    [M('« Je suis d\'accord avec vous »','I agree with you.',['I am agree with you.','I\'m agree with you.'],'« agree » est un verbe : jamais de « am » devant.'),
+     O('Je vois ce que vous voulez dire, mais je ne suis pas convaincu.','I see what you mean, but I\'m not convinced.'),
+     M('Une façon diplomate de contredire :','I see your point, but have we considered the cost?',['That\'s wrong.','No, it\'s a stupid idea.'],'Reconnaître le point de l\'autre, puis poser une question : la contradiction passe mieux.'),
+     F('From my point of ___, this is too risky.','view',['vue','sight'],'« from my point of view » = de mon point de vue.'),
+     O('Pourriez-vous développer ce point ?','Could you elaborate on that point?'),
+     F('I\'d like to ___ something, if I may.','add',['adding','added'],'Après « would like to », la base verbale.'),
+     M('Pour interrompre poliment :','Sorry to interrupt, but could I just add something?',['Wait, wait, me!','Shut up one second.'],'« Sorry to interrupt » ou « Can I jump in here? ».')]),
+  L('u3l3','Conclure et répartir',
+    [['les prochaines étapes','the next steps'],['une action à mener','an action item'],['résumer','to sum up'],['d\'ici la fin de la semaine','by the end of the week'],['faire un point','to touch base']],
+    [O('Pour résumer, nous avons pris trois décisions.','To sum up, we\'ve made three decisions.','Prendre une décision = « make a decision ».'),
+     F('Julie will send the proposal ___ Friday.','by',['until','for'],'« by » = au plus tard. « until » = jusqu\'à (une durée continue).'),
+     MF('« Let\'s touch base next week » signifie…','Faisons un point la semaine prochaine.',['Touchons le fond la semaine prochaine.','Changeons de base la semaine prochaine.'],'Expression très courante en entreprise.'),
+     O('Quelles sont les prochaines étapes ?','What are the next steps?'),
+     F('Thank you all for your ___.','time',['times','temps'],'« Thank you for your time » clôt une réunion ou un appel.'),
+     MF('« Can you take ownership of this? »','Pouvez-vous prendre ça en charge ?',['Pouvez-vous acheter ça ?','Pouvez-vous devenir propriétaire de l\'entreprise ?'],'« take ownership » = assumer la responsabilité d\'une tâche.')]),
+]},
+{id:'u4', title:'Prospection et vente', level:'B2', color:'#D06A1F', ledge:'#9C4B10', desc:'Accrocher, découvrir le besoin, conclure', lessons:[
+  L('u4l1','Accrocher un prospect',
+    [['un prospect','a lead'],['un décideur','a decision-maker'],['un appel découverte','a discovery call'],['un point de douleur','a pain point'],['une proposition de valeur','a value proposition']],
+    [O('Je vous appelle car nous aidons les artisans à gagner du temps.','I\'m calling because we help tradespeople save time.','Artisans = « tradespeople » (plombiers, électriciens…) ou « craftspeople » (métiers d\'art).'),
+     M('L\'accroche la plus naturelle :','Do you have two minutes for a quick question?',['Have you two minutes for a quick question?','Do you have two minutes for a fast question?'],'« Have you… ? » sans « do » est vieilli. On dit « a quick question ».'),
+     F('We help small businesses ___ their admin work.','streamline',['streamlining','to streamlining'],'« help » + base verbale (ou « to » + base verbale).'),
+     M('« Qui prend ce genre de décision chez vous ? »','Who usually makes this kind of decision in your company?',['Who takes this kind of decision at you?','Who is the decider of your house?'],'« make a decision » est la forme standard. « at you » est un calque de « chez vous ».'),
+     O('Quel est votre plus gros défi au quotidien ?','What\'s your biggest challenge day to day?'),
+     F('Would you be open ___ a 30-minute call next week?','to',['for','at'],'« be open to » + nom ou -ing.'),
+     M('Le prospect dit « Just send me an email ». Bonne réponse :','Sure. What would be most useful for you to see in it?',['OK, bye.','No, I prefer to talk now.'],'Accepter, puis poser une question : vous gardez la conversation ouverte.')]),
+  L('u4l2','Rendez-vous découverte',
+    [['un besoin','a need'],['un délai','a timeline'],['les outils actuels','current tools'],['impliqué dans','involved in'],['une priorité','a priority']],
+    [O('Comment gérez-vous vos devis aujourd\'hui ?','How do you handle your quotes at the moment?','« Aujourd\'hui » au sens de « actuellement » = « at the moment » ou « currently ».'),
+     MF('Laquelle est une question ouverte, plus utile en découverte ?','What happens when a client pays late?',['Do clients pay late?','Is it a problem?'],'Les questions en What / How font parler le prospect. Les questions fermées appellent « yes » ou « no ».'),
+     F('How much time do you ___ on paperwork each week?','spend',['pass','take'],'Passer du temps = « spend time ». « pass time » = tuer le temps.'),
+     O('Si je comprends bien, le problème principal est le suivi des paiements.','If I understand correctly, the main issue is tracking payments.'),
+     MF('« What would success look like for you? »','À quoi ressemblerait une réussite pour vous ?',['Quel look avez-vous quand vous réussissez ?','Avez-vous déjà réussi ?'],'Question clé pour faire formuler l\'objectif par le client.'),
+     F('Is there a budget set ___ for this project?','aside',['beside','away'],'« set aside » = mettre de côté, réserver.'),
+     O('Qui d\'autre est impliqué dans la décision ?','Who else is involved in the decision?')]),
+  L('u4l3','Proposition et closing',
+    [['une offre','an offer'],['un essai gratuit','a free trial'],['un engagement','a commitment'],['conclure une vente','to close a deal'],['un projet pilote','a pilot']],
+    [O('Je vous envoie la proposition d\'ici demain.','I\'ll send you the proposal by tomorrow.'),
+     MF('« Does this sound like a good fit? »','Est-ce que ça vous semble adapté ?',['Est-ce que ça sonne bien ?','Est-ce que vous êtes en forme ?'],'« a good fit » = une solution adaptée à leur situation.'),
+     F('If you sign this month, we can ___ you a 10% discount.','offer',['propose','borrow'],'« propose » = suggérer une idée. On « offers » une remise.'),
+     M('Le prospect hésite. Question de closing en douceur :','What would you need to see to move forward?',['So you buy or not?','Sign here please.'],'« move forward » = avancer, passer à l\'étape suivante.'),
+     O('Nous pouvons commencer par un pilote de deux semaines.','We can start with a two-week pilot.'),
+     F('We offer a ___ trial.','two-week',['two-weeks','twos-week'],'Adjectif composé : pas de s. « a two-week trial ».'),
+     MF('Le prospect dit « I\'ll get back to you ». Le plus souvent, cela signifie…','Il a besoin de temps : fixez une date de relance.',['Il signe demain.','Il refuse définitivement.'],'Réponse utile : « Sure. Shall we pencil in a call next Thursday? »')]),
+]},
+{id:'u5', title:'Négociation', level:'B2', color:'#BE3E66', ledge:'#8E2747', desc:'Prix, objections, accord', lessons:[
+  L('u5l1','Prix et conditions',
+    [['une remise','a discount'],['un tarif','a rate'],['hors taxes','excluding VAT'],['TTC','including VAT'],['négociable','negotiable']],
+    [M('« Le prix est de 1 200 € HT. »','The price is €1,200 excluding VAT.',['The price is €1.200 out of taxes.','The price is 1,200€ without taxes.'],'En anglais, la virgule sépare les milliers (1,200) et le point les décimales. Le symbole € se place avant le nombre.'),
+     F('Is there any flexibility ___ the price?','on',['of','at'],'« flexibility on » + sujet de négociation.'),
+     O('C\'est un peu au-dessus de notre budget.','That\'s slightly above our budget.'),
+     M('Une contre-proposition polie :','Would you consider a lower rate for a longer contract?',['Lower your price or no deal.','Your price is too expensive.'],'Un prix est « too high ». C\'est le produit qui est « too expensive ».'),
+     O('Que pouvez-vous faire sur le prix ?','What can you do on the price?'),
+     F('The rates are ___ of VAT.','exclusive',['excluded','without'],'« exclusive of VAT » = hors taxes. On dit aussi « excluding VAT » ou « + VAT ».')]),
+  L('u5l2','Répondre aux objections',
+    [['une objection','an objection'],['un concurrent','a competitor'],['un retour sur investissement','a return on investment'],['une inquiétude','a concern'],['en d\'autres termes','in other words']],
+    [M('Le client dit « It\'s too expensive ». Meilleure réponse :','I understand. Compared to what?',['No, it\'s not.','Then buy something cheaper.'],'Reformuler, puis creuser : l\'objection devient une conversation.'),
+     O('Je comprends votre inquiétude.','I understand your concern.','Inquiétude = « concern ». « worry » est plus personnel.'),
+     F('We\'re currently working ___ another supplier.','with',['on','for'],'Travailler avec un fournisseur = « work with ».'),
+     MF('« ROI » signifie…','le retour sur investissement',['le roi de l\'entreprise','le taux d\'intérêt'],'Return On Investment.'),
+     O('Qu\'est-ce qui vous ferait changer d\'avis ?','What would change your mind?'),
+     F('That\'s a fair ___.','point',['pointe','dot'],'« That\'s a fair point » = « C\'est une remarque juste ».')]),
+  L('u5l3','Trouver un accord',
+    [['un compromis','a compromise'],['un accord','an agreement'],['les conditions','the terms'],['mettre par écrit','to put in writing'],['Marché conclu','It\'s a deal']],
+    [O('Je pense que nous sommes parvenus à un accord.','I think we\'ve reached an agreement.'),
+     F('Let\'s put everything in ___.','writing',['write','written'],'« put something in writing » = mettre par écrit.'),
+     MF('« Win-win » signifie…','gagnant-gagnant',['deux victoires d\'affilée','gagner deux fois plus'],'« a win-win solution ».'),
+     F('We ___ on a compromise for the delivery date.','agreed',['accorded','agree'],'Se mettre d\'accord sur = « agree on ».'),
+     O('Nous enverrons le contrat d\'ici lundi.','We\'ll send the contract by Monday.'),
+     M('Pour clore la négociation :','Great, so we have a deal.',['Great, so we have a business.','Great, so it\'s a deal of business.'],'« We have a deal » ou « It\'s a deal ».')]),
+]},
+{id:'u6', title:'Chiffres et présentations', level:'B2', color:'#2E7FB8', ledge:'#1D5A86', desc:'Tendances, pourcentages, prise de parole', lessons:[
+  L('u6l1','Nombres et tendances',
+    [['augmenter','to increase'],['baisser','to decrease'],['rester stable','to remain stable'],['le chiffre d\'affaires','revenue'],['un trimestre','a quarter']],
+    [M('« Le chiffre d\'affaires a augmenté de 15 %. »','Revenue increased by 15%.',['Revenue increased of 15%.','Business figure increased by 15%.'],'« by » pour l\'écart, « to » pour la valeur d\'arrivée.'),
+     F('Sales rose ___ €80,000 to €95,000.','from',['of','since'],'« rise from X to Y ».'),
+     O('Les coûts sont restés stables cette année.','Costs remained stable this year.'),
+     M('Comment lit-on « 2.5 million » ?','two point five million',['two comma five millions','two dot five millions'],'On dit « point » pour la décimale, et « million » reste au singulier après un nombre.'),
+     F('Profits fell ___ 3% in the last quarter.','by',['of','from'],'Baisser de 3 % = « fall by 3% ».'),
+     MF('« A quarter » dans un rapport financier, c\'est…','un trimestre',['un quart d\'heure','un quartier'],'Q1, Q2… = premier, deuxième trimestre. « trimester » s\'emploie pour la grossesse ou l\'année scolaire (US).'),
+     O('Nous prévoyons une hausse importante l\'an prochain.','We expect a significant rise next year.')]),
+  L('u6l2','Présenter à l\'oral',
+    [['une diapositive','a slide'],['un graphique','a chart'],['comme vous pouvez le voir','as you can see'],['un aperçu','an overview'],['les points clés à retenir','the key takeaways']],
+    [O('Je vais commencer par un bref aperçu.','I\'ll start with a brief overview.'),
+     F('As you can see ___ this chart, sales are up.','from',['of','by'],'« As you can see from this chart » (ou « in this chart »).'),
+     M('Une transition naturelle :','Moving on to the next slide…',['Now, next slide, go.','We pass to the next slide.'],'Passer à = « move on to ». « pass » est un faux ami ici.'),
+     O('Cette diapositive montre nos résultats trimestriels.','This slide shows our quarterly results.'),
+     F('That\'s a great question. Let me get back to you ___ that.','on',['in','at'],'« get back to you on that » = « je vous réponds plus tard là-dessus ».'),
+     M('Pour conclure une présentation :','To wrap up, here are the three key takeaways.',['To finish, here is the end.','In conclusion of all, it\'s finished.'],'« To wrap up » = pour conclure.')]),
+]},
+{id:'u7', title:'Faux amis et pièges', level:'B2', color:'#5E7F2C', ledge:'#425B1C', desc:'Les erreurs que font tous les francophones', lessons:[
+  L('u7l1','Faux amis, série 1',
+    [['actuellement','currently'],['éventuellement','possibly'],['une formation','a training course'],['assister à','to attend'],['sensible','sensitive']],
+    [MF('« Actually » signifie…','en fait',['actuellement','activement'],'Actuellement = « currently » ou « at the moment ».'),
+     F('We are ___ looking for new suppliers.','currently',['actually','eventually'],'Actuellement = « currently ».'),
+     MF('« Eventually » signifie…','finalement, au bout du compte',['éventuellement','peut-être'],'Éventuellement = « possibly » ou « if necessary ».'),
+     M('« J\'ai assisté à une formation. »','I attended a training course.',['I assisted a formation.','I went to a formation.'],'« assist » = aider. Assister à = « attend ». Une formation = « a training course ».'),
+     O('C\'est une information sensible.','This is sensitive information.','« sensible » en anglais = raisonnable.'),
+     F('Can you give me some ___ about the project?','information',['informations','an information'],'« information » est indénombrable : jamais de s, jamais « an ».')]),
+  L('u7l2','Faux amis, série 2',
+    [['une réclamation','a complaint'],['vérifier','to check'],['postuler','to apply'],['sympathique','friendly'],['une demande','a request']],
+    [MF('« To control » signifie surtout…','maîtriser, diriger',['vérifier','inspecter un billet'],'Vérifier = « check ». « control » = avoir le contrôle sur.'),
+     F('Could you ___ the figures before sending?','check',['control','verificate'],'Vérifier = « check ».'),
+     MF('« A sympathetic manager », c\'est…','un manager compatissant',['un manager sympa','un manager sympathisant'],'Sympa = « nice » ou « friendly ».'),
+     O('Nous avons reçu une réclamation d\'un client.','We received a complaint from a client.'),
+     F('I\'d like to ___ for the position.','apply',['postulate','candidate'],'Postuler = « apply for ». « postulate » = poser comme hypothèse.'),
+     MF('« A demand » (nom) en anglais désigne…','une exigence, ou la demande du marché',['une simple question polie','un formulaire'],'Une demande polie = « a request ».')]),
+  L('u7l3','Pièges de grammaire',
+    [['depuis (une durée)','for'],['depuis (un point de départ)','since'],['il y a (dans le passé)','ago'],['pendant (un événement)','during'],['jusqu\'à','until']],
+    [F('I\'ve worked here ___ five years.','for',['since','during'],'« for » + durée.'),
+     F('I\'ve worked here ___ 2019.','since',['for','from'],'« since » + point de départ.'),
+     M('« J\'ai rencontré le client il y a deux jours. »','I met the client two days ago.',['I have met the client two days ago.','I met the client since two days.'],'« ago » s\'emploie avec le prétérit, jamais avec le present perfect.'),
+     F('Could you give me some ___ on this?','advice',['advices','an advice'],'« advice » est indénombrable. Un conseil = « a piece of advice ».'),
+     M('« Je vous ai envoyé le fichier hier. »','I sent you the file yesterday.',['I have sent you the file yesterday.','I send you the file yesterday.'],'Moment passé précis (yesterday) : prétérit obligatoire.'),
+     O('Nous travaillons avec eux depuis trois ans.','We\'ve been working with them for three years.','Action commencée dans le passé et toujours en cours : present perfect continu.'),
+     F('The meeting lasted ___ two hours.','for',['during','since'],'Durée = « for ». « during » + nom d\'événement (during the meeting).')]),
+]},
+{id:'u8', title:'Small talk et réseau', level:'B1', color:'#A77A12', ledge:'#7A580A', desc:'Briser la glace, garder le contact', lessons:[
+  L('u8l1','Briser la glace',
+    [['Enchanté','Nice to meet you'],['Que faites-vous dans la vie ?','What do you do?'],['une carte de visite','a business card'],['un salon professionnel','a trade show'],['Comment ça va ?','How\'s it going?']],
+    [M('On vous dit « How do you do? ». Vous répondez :','How do you do?',['Fine, thank you, and you?','I do well.'],'Formule très formelle (UK) : on répond par la même phrase.'),
+     O('C\'est votre première fois à ce salon ?','Is this your first time at this trade show?'),
+     MF('« What do you do? » vous demande…','votre métier',['ce que vous faites en ce moment','vos loisirs du week-end'],'Ce que vous faites en ce moment = « What are you doing? ».'),
+     F('I ___ for a small consulting firm.','work',['works','working'],'Présent simple pour une situation stable.'),
+     O('Je dirige une petite société de conseil.','I run a small consulting company.','Diriger une entreprise = « run a company ».'),
+     M('Pour relancer la conversation :','So, how did you get into this field?',['Why you are here?','What is your salary?'],'Les questions sur le parcours sont sûres et engageantes.')]),
+  L('u8l2','Réseauter et garder le contact',
+    [['garder le contact','to keep in touch'],['présenter quelqu\'un','to introduce someone'],['un contact','a contact'],['transférer un email','to forward an email'],['un associé','a partner']],
+    [O('J\'ai été ravi d\'échanger avec vous.','It was great talking to you.'),
+     F('Let\'s keep in ___.','touch',['tact','touched'],'« keep in touch » = garder le contact.'),
+     M('« Je vais vous présenter mon associé. »','I\'ll introduce you to my partner.',['I\'ll present you to my partner.','I\'ll present you my partner.'],'On « introduces » une personne. On « presents » un projet ou des résultats.'),
+     O('Je vous envoie une demande de connexion sur LinkedIn.','I\'ll send you a connection request on LinkedIn.'),
+     F('Could you ___ me his email?','forward',['advance','further'],'Transférer un email = « forward ».'),
+     M('Pour prendre congé poliment :','I\'ll let you get back to it. Nice meeting you!',['I go now, bye.','OK, finished, goodbye.'],'« I\'ll let you go » / « I\'ll let you get back to it » : sortie élégante.')]),
+]},
+];
+
+const COACH = [
+  {id:'c1', t:'Relancer un prospect', d:'Email de relance à un prospect sans réponse depuis 10 jours (4 à 6 phrases).', task:'Write a polite follow-up email to a prospect who has not replied for 10 days.'},
+  {id:'c2', t:'Pitcher ton activité', d:'Présente ton activité en 3 phrases à un prospect anglophone.', task:'Write a 3-sentence pitch presenting the learner\'s business to an English-speaking prospect.'},
+  {id:'c3', t:'Décaler un rendez-vous', d:'Décline poliment une réunion et propose deux autres créneaux.', task:'Write a short email politely declining a meeting and proposing two other time slots.'},
+  {id:'c4', t:'Objection prix', d:'Le client écrit « It\'s too expensive ». Réponds-lui.', task:'Reply in writing to a client who said "It\'s too expensive", acknowledging the concern and keeping the conversation open.'},
+  {id:'c5', t:'Compte rendu', d:'Résume une réunion client en 3 points d\'action.', task:'Write a short meeting summary with three action items, owners and deadlines.'},
+  {id:'c6', t:'Texte libre', d:'Colle n\'importe quel texte en anglais à corriger.', task:'Proofread any professional English text written by the learner.'},
+];
+
+/* ---------- ORAL : dialogues guidés, prononciation, conversations avec Claude ----------
+   Dialogue : them = réplique lue à voix haute, hint = ce que tu dois dire (en français),
+   a = formulations acceptées (la première sert de modèle), k = mots-clés suffisants ("a|b" = l'un ou l'autre). */
+const DIALOGS = [
+{id:'d1', t:'Appel de prospection', d:'Accrocher une gérante d\'agence et décrocher un rendez-vous', color:'#D06A1F',
+ ctx:'Tu appelles Sarah, gérante d\'une agence immobilière à Londres. Objectif : un rendez-vous de 30 minutes.', turns:[
+  {them:'Good morning, Harper Estates, Sarah speaking.', hint:'Présente-toi (prénom et entreprise) et demande si elle a deux minutes.',
+   a:['Hello Sarah, this is Guillaume from Myrmeo. Do you have two minutes?','Hi Sarah, it\'s Guillaume from Myrmeo. Have you got a couple of minutes?'], k:['myrmeo','minute']},
+  {them:'Sure, what\'s it about?', hint:'Explique que tu aides les petites entreprises à gagner du temps sur l\'administratif.',
+   a:['We help small businesses save time on their admin work.','I help small companies spend less time on paperwork.'], k:['help','time']},
+  {them:'Hmm, we already use a few tools for that.', hint:'Demande lesquels, et ce qui marche bien pour elle.',
+   a:['Which tools do you use, and what works well for you?','Which ones do you use? What works well and what doesn\'t?'], k:['which|what','use|work']},
+  {them:'Mostly spreadsheets, to be honest. It\'s a bit messy.', hint:'Propose un appel de 30 minutes la semaine prochaine pour en parler.',
+   a:['Would you be open to a thirty-minute call next week to talk about it?','Could we schedule a thirty-minute call next week?'], k:['call|meeting','next week']},
+  {them:'Okay, Thursday afternoon could work.', hint:'Propose jeudi à 15 h et dis que tu lui envoies une invitation.',
+   a:['Great, how about Thursday at 3 pm? I\'ll send you an invitation.','Perfect, shall we say 3 pm on Thursday? I\'ll send you an invite.'], k:['thursday|3','send']},
+]},
+{id:'d2', t:'Réunion client en visio', d:'Ouvrir la visio, annoncer l\'ordre du jour, partager l\'écran', color:'#14917F',
+ ctx:'Tu retrouves David, un client, en visio pour le point mensuel.', turns:[
+  {them:'Hi! Can you hear me okay?', hint:'Dis que oui, parfaitement, et demande s\'il t\'entend aussi.',
+   a:['Yes, I can hear you perfectly. Can you hear me?','Yes, loud and clear. Can you hear me too?'], k:['hear']},
+  {them:'Yes, all good. Sorry, I\'m a couple of minutes late.', hint:'Rassure-le (pas de souci) et remercie-le de prendre le temps.',
+   a:['No problem at all. Thank you for taking the time.','No worries, thanks for your time today.'], k:['no','thank']},
+  {them:'So, what\'s on the agenda today?', hint:'Annonce trois points : les résultats, le budget, puis les prochaines étapes.',
+   a:['We have three points: the results, the budget and the next steps.','There are three items on the agenda: results, budget and next steps.'], k:['budget','next steps|next step']},
+  {them:'Sounds good. Could you share your screen?', hint:'Dis : bien sûr, tu partages ton écran. Demande s\'il le voit.',
+   a:['Sure, let me share my screen. Can you see it?','Of course, I\'m sharing my screen now. Can you see it?'], k:['share','screen']},
+  {them:'Yes, I can see the first slide.', hint:'Commence : cette diapo montre les résultats du trimestre.',
+   a:['Great. This slide shows our results for the quarter.','Perfect. This slide shows the quarterly results.'], k:['slide','quarter']},
+]},
+{id:'d3', t:'Décaler un rendez-vous', d:'Annoncer un imprévu et proposer d\'autres créneaux', color:'#3767D0',
+ ctx:'Tu appelles Mark, un partenaire, pour décaler votre réunion de mardi.', turns:[
+  {them:'Hello, Mark Davies speaking.', hint:'Présente-toi et dis que tu appelles au sujet de votre réunion de mardi.',
+   a:['Hi Mark, this is Guillaume. I\'m calling about our meeting on Tuesday.','Hello Mark, it\'s Guillaume. I\'m calling about Tuesday\'s meeting.'], k:['calling','tuesday']},
+  {them:'Oh yes, is everything okay?', hint:'Excuse-toi : tu dois la reporter, tu as un imprévu.',
+   a:['I\'m afraid I need to postpone it, something came up.','I\'m sorry, but I have to reschedule. Something unexpected came up.'], k:['postpone|reschedule|move|change']},
+  {them:'No problem. When would suit you?', hint:'Propose jeudi matin ou vendredi après-midi.',
+   a:['Would Thursday morning or Friday afternoon work for you?','How about Thursday morning or Friday afternoon?'], k:['thursday','friday']},
+  {them:'Friday afternoon is fine. Shall we say two o\'clock?', hint:'Accepte et dis que tu envoies une nouvelle invitation.',
+   a:['Two o\'clock is perfect. I\'ll send you a new invitation.','Perfect, I\'ll send you an updated invite.'], k:['send']},
+  {them:'Great, thanks for letting me know.', hint:'Remercie-le de sa compréhension et salue-le.',
+   a:['Thank you for understanding. Have a nice day!','Thanks for your understanding. Speak soon, bye!'], k:['thank']},
+]},
+{id:'d4', t:'Négocier le prix', d:'Tenir son prix face à une acheteuse', color:'#BE3E66',
+ ctx:'Linda, responsable des achats, a reçu ta proposition. Elle trouve le prix trop élevé.', turns:[
+  {them:'We\'ve looked at your proposal. The price is a bit high for us.', hint:'Dis que tu comprends et demande : par rapport à quoi ?',
+   a:['I understand. Compared to what?','I see. What are you comparing it to?'], k:['compar']},
+  {them:'Another supplier quoted us twenty percent less.', hint:'Demande si leur offre inclut le suivi et la formation.',
+   a:['Does their offer include support and training?','Does that price include follow-up and training?'], k:['include']},
+  {them:'Not really, no.', hint:'Explique que ton prix inclut tout, sans frais cachés.',
+   a:['Our price includes everything, with no hidden costs.','Everything is included in our price. There are no hidden fees.'], k:['includ','hidden']},
+  {them:'Is there any flexibility on the price?', hint:'Propose 10 % de remise pour un contrat d\'un an.',
+   a:['We could offer a ten percent discount for a one-year contract.','I can offer you ten percent off if you sign for a year.'], k:['10','year']},
+  {them:'That sounds reasonable. Let\'s do that.', hint:'Conclus : parfait, marché conclu, tu envoies le contrat d\'ici vendredi.',
+   a:['Great, so we have a deal. I\'ll send the contract by Friday.','Perfect. I\'ll send you the contract by Friday.'], k:['contract','friday']},
+]},
+{id:'d5', t:'Small talk au salon', d:'Briser la glace et garder le contact', color:'#A77A12',
+ ctx:'Pause café sur un salon professionnel. Une inconnue engage la conversation.', turns:[
+  {them:'Hi there! Is this your first time at this show?', hint:'Dis que oui, c\'est ta première fois, et retourne-lui la question.',
+   a:['Yes, it\'s my first time. What about you?','Yes, first time for me. How about you?'], k:['1st|yes','you']},
+  {them:'No, I come every year. I\'m Emma, by the way.', hint:'Dis enchanté et donne ton prénom.',
+   a:['Nice to meet you, Emma. I\'m Guillaume.','Pleased to meet you, Emma. My name is Guillaume.'], k:['meet']},
+  {them:'Nice to meet you too. So, what do you do?', hint:'Dis que tu diriges une petite entreprise de services pour les artisans, à Paris.',
+   a:['I run a small services company for tradespeople in Paris.','I run a small business that helps tradespeople, based in Paris.'], k:['run|own|manage','paris']},
+  {them:'Oh, interesting! How did you get into that?', hint:'Raconte : tu as travaillé avec beaucoup d\'artisans et tu as vu qu\'ils perdaient du temps sur l\'administratif.',
+   a:['I worked with a lot of tradespeople and saw they were losing time on admin.','I\'ve worked with many tradespeople, and I noticed they spent too much time on paperwork.'], k:['work','time']},
+  {them:'That makes sense. Well, I should get going.', hint:'Propose de garder le contact et demande sa carte de visite.',
+   a:['Let\'s keep in touch. Could I have your business card?','It was great talking to you. Can I get your business card?'], k:['card|touch|linkedin']},
+]},
+{id:'d6', t:'Présenter ses chiffres', d:'Commenter des résultats devant un comité', color:'#2E7FB8',
+ ctx:'Tu présentes les résultats annuels à des investisseurs en visio.', turns:[
+  {them:'Okay, we\'re ready when you are.', hint:'Remercie et annonce un bref aperçu des résultats.',
+   a:['Thank you. I\'ll start with a brief overview of our results.','Thanks. Let me start with a quick overview of the results.'], k:['overview|summary']},
+  {them:'Go ahead.', hint:'Dis que le chiffre d\'affaires a augmenté de 15 % cette année.',
+   a:['Revenue increased by fifteen percent this year.','This year, our revenue rose by fifteen percent.'], k:['revenue|turnover|sales','15']},
+  {them:'That\'s impressive. What about costs?', hint:'Dis que les coûts sont restés stables.',
+   a:['Costs remained stable.','Our costs stayed stable this year.'], k:['cost','stable']},
+  {them:'And what do you expect for next year?', hint:'Dis que vous prévoyez une hausse importante au premier trimestre.',
+   a:['We expect a significant rise in the first quarter.','We\'re expecting a strong increase in Q1.'], k:['expect','quarter|q1']},
+  {them:'Great. Any risks we should know about?', hint:'Dis : bonne question, tu reviens vers eux là-dessus d\'ici vendredi.',
+   a:['That\'s a good question. Let me get back to you on that by Friday.','Good question. I\'ll get back to you on that by Friday.'], k:['get back']},
+]},
+];
+
+const PRONUN = [
+{id:'p1', t:'Le son TH', d:'think, three, Thursday, together', items:[
+  ['Thank you for your time.','Langue entre les dents pour « th ». Ni « s » ni « z ».'],
+  ['I think the third option is better.','think ≠ sink : la langue doit être visible entre les dents.'],
+  ['Thursday the thirteenth.','Deux « th » soufflés : comme un « s » mais avec la langue entre les dents.'],
+  ['We worked together with the other team.','« th » voisé dans the, other, together : comme un « z » langue entre les dents.'],
+  ['Three thousand clients this month.','Pas « tree » : soufflez le « th » de three.'],
+  ['Is it thirteen or thirty?','thir-TEEN (accent à la fin), THIR-ty (accent au début). C\'est ce qui les distingue à l\'oral.'],
+]},
+{id:'p2', t:'Mots piégeux du bureau', d:'schedule, colleague, Wednesday, receipt', items:[
+  ['schedule','UK « SHED-yool », US « SKED-jool ». Les deux sont corrects.'],
+  ['colleague','« KOL-eeg » : deux syllabes, accent au début.'],
+  ['Wednesday','« WENZ-day » : le premier d est muet.'],
+  ['purchase','« PUR-chiss » : la fin ne rime pas avec « chase ».'],
+  ['comfortable','« KUMF-tuh-bul » : trois syllabes seulement.'],
+  ['receipt','« ri-SEET » : le p est muet.'],
+  ['determine','« di-TER-min » : finit comme « min », pas comme « mine ».'],
+  ['hierarchy','« HIGH-uh-rar-key » : accent sur la première syllabe.'],
+]},
+{id:'p3', t:'Accent tonique', d:'deVElop, COMpany, to preSENT', items:[
+  ['We need to develop the company.','de-VE-lop, COM-pa-ny. En anglais, une syllabe ressort nettement.'],
+  ['Can you present the results?','Verbe : pre-SENT. Nom : a PRE-sent.'],
+  ['Let\'s record the meeting.','Verbe : re-CORD. Nom : a RE-cord.'],
+  ['It\'s an important decision.','im-POR-tant, de-CI-sion.'],
+  ['They are our main competitor.','com-PE-ti-tor.'],
+  ['We want to increase the budget.','Verbe : in-CREASE. Nom : an IN-crease.'],
+]},
+{id:'p4', t:'Le H et les -ED', d:'help, huge, worked, visited', items:[
+  ['How can I help you?','Le h s\'aspire : un léger souffle, comme pour faire de la buée.'],
+  ['We have a huge opportunity.','Soufflez le h de have et huge. Et pas de h devant opportunity !'],
+  ['I worked on it yesterday.','worked = « workt » : -ed se dit « t » après k, p, s, sh, ch.'],
+  ['We finished the project.','finished = « finisht » : aucune syllabe en plus.'],
+  ['She visited our office.','visited = « vi-zi-tid » : -ed se dit « id » après t ou d.'],
+  ['They called me back.','called = « cawld » : -ed se dit « d » après un son voisé.'],
+]},
+{id:'p5', t:'Chiffres et dates', d:'2.5 million, 15th, 20%', items:[
+  ['Our revenue is two point five million euros.','La décimale se dit « point ». million reste au singulier.'],
+  ['The meeting is on the fifteenth of March.','fifteenth : finissez bien sur le « th ».'],
+  ['We grew by twenty percent.','per-CENT : accent sur la deuxième syllabe.'],
+  ['The deadline is Friday the thirtieth.','thirtieth : « THIR-tee-ith ».'],
+  ['It costs one thousand two hundred euros.','Pas de s à hundred ni à thousand après un nombre.'],
+  ['Call me at nine thirty.','9 h 30 = « nine thirty ». « half past nine » est plus britannique.'],
+]},
+];
+
+const AI_SCEN = [
+  {id:'a1', t:'Appel de prospection', d:'Sarah, gérante d\'agence, pressée et un peu sceptique.',
+   role:'Sarah, manager of a small real estate agency in London. You are busy, polite but a little skeptical about a cold call from a French entrepreneur selling admin help to small businesses. Raise realistic objections, and agree to a meeting only if the learner is convincing.',
+   opener:'Harper Estates, Sarah speaking. How can I help?'},
+  {id:'a2', t:'Rendez-vous découverte', d:'Tom, plombier, t\'explique comment il gère ses devis.',
+   role:'Tom, owner of a five-person plumbing business. The learner is interviewing you to understand your admin problems (quotes, invoices, late payments, scheduling). Answer honestly and give concrete details, but only when asked.',
+   opener:'Hi, thanks for coming over. So, what did you want to ask me?'},
+  {id:'a3', t:'Négociation', d:'Linda, acheteuse, veut une remise.',
+   role:'Linda, procurement manager. You find the learner\'s price too high, mention a cheaper competitor, and push for a discount or better terms. Be firm but fair.',
+   opener:'Thanks for the proposal. Honestly, the price is higher than we expected.'},
+  {id:'a4', t:'Client mécontent', d:'James appelle pour une facture erronée.',
+   role:'James, an unhappy client. Your last invoice was wrong for the second time. You are annoyed but calm down if the learner apologises properly and proposes a clear fix.',
+   opener:'Hi, I\'m calling because there\'s a mistake on my last invoice. And it\'s the second time.'},
+  {id:'a5', t:'Small talk au salon', d:'Emma, consultante, à la pause café.',
+   role:'Emma, a friendly marketing consultant met at a trade show coffee break. Chat about work, the show, travel and business, and ask the learner about their company.',
+   opener:'Hi! The coffee is actually good here, isn\'t it? Is this your first time at the show?'},
+  {id:'a7', t:'Parler de ton activité', d:'Une journaliste curieuse t\'interroge sur ton entreprise.',
+   role:'Jane, a curious business journalist interviewing the learner about their company: what they do, their clients, why they started, their plans. Ask one question at a time and react to what they say.',
+   opener:'Thanks for taking the time! So, tell me about your business. What do you do exactly?'},
+  {id:'a8', t:'Entretien en anglais', d:'Présente ton parcours, tes forces, tes projets.',
+   role:'Daniel, a friendly interviewer at an international company. Ask about the learner\'s background, strengths, a challenge they overcame and their goals, one question at a time.',
+   opener:'Hi, nice to meet you. Could you start by telling me a bit about yourself?'},
+  {id:'a9', t:'Tendances et actualité', d:'IA, télétravail, petites entreprises : donne ton avis.',
+   role:'Priya, a colleague who enjoys discussing business trends: AI at work, remote work, small businesses, digital tools. Share opinions and ask for theirs.',
+   opener:'Have you noticed how much AI tools are changing the way small businesses work?'},
+  {id:'a6', t:'Discussion libre', d:'Un collègue anglophone, sujet au choix.',
+   role:'a friendly English-speaking colleague having a relaxed chat about work, projects and weekend plans. Follow whatever topic the learner brings up.',
+   opener:'Hey! How\'s your week going so far?'},
+];
+const ONLINE_URL = 'https://guillaumecohenmikula.github.io/myrmeo-prospection/anglais/';
+
+/* =====================================================================
+   ICÔNES
+   ===================================================================== */
+const I = {
+  flame:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.6 2.2c.5 3.1 3 4.7 4.5 7 1 1.6 1.4 3.1 1.4 4.6A6.5 6.5 0 0 1 12 20.5a6.5 6.5 0 0 1-6.5-6.7c0-2.3 1-4.3 2.7-5.8.2 1.8.9 3 2 3.6-.3-3.2.4-6.3 2.4-9.4z"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2 4.5 13.5h6.2L9.8 22l9.2-11.7h-6.3z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.6 4 12.9a5 5 0 0 1 7.1-7.1l.9.9.9-.9a5 5 0 0 1 7.1 7.1z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10V8a5 5 0 0 1 10 0v2h.5A1.5 1.5 0 0 1 19 11.5v8a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19.5v-8A1.5 1.5 0 0 1 6.5 10zm2.5 0h5V8a2.5 2.5 0 0 0-5 0z"/></svg>',
+  speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L13 19V5L7.5 9.5z" fill="currentColor"/><path d="M16.5 9a4.2 4.2 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  path:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="5" r="2.4" fill="currentColor"/><circle cx="17" cy="12" r="2.4" fill="currentColor"/><circle cx="7" cy="19" r="2.4" fill="currentColor"/><path d="M9.2 6.2 14.8 10.8M14.8 13.2 9.2 17.8"/></svg>',
+  review:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-14.3 4.9M4 12a8 8 0 0 1 14.3-4.9"/><path d="M18.5 3v4.2h-4.2M5.5 21v-4.2h4.2"/></svg>',
+  coach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H10l-4.5 4v-4H4z"/><path d="M8 10.5h8"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c1.2-3.8 4-5.6 7.5-5.6s6.3 1.8 7.5 5.6"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>',
+  target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v2h3v2.5A4.5 4.5 0 0 1 16.2 12a5 5 0 0 1-3.2 2.8V18h3v3H8v-3h3v-3.2A5 5 0 0 1 7.8 12 4.5 4.5 0 0 1 4 7.5V5h3zm0 4H6v.5a2.5 2.5 0 0 0 1.4 2.3A6 6 0 0 1 7 8zm10 0v1c0 .6 0 1.2-.4 1.8A2.5 2.5 0 0 0 18 7.5V7z"/></svg>',
+};
+
+/* =====================================================================
+   ÉTAT ET SAUVEGARDE
+   ===================================================================== */
+const KEY = 'anglais-pro-v1';
+const DAY = 864e5;
+const defaults = () => ({v:1, xp:0, days:{}, streak:{count:0,last:null}, done:{},
+  mist:{}, stats:{answered:0,correct:0,lessons:0}, oral:{d:{},p:{},ai:0}, speakOffUntil:0,
+  settings:{goal:20, accent:'en-GB', rate:0.95, sound:true, autoread:true, speakInLessons:true, input:'mic', hideText:false, handsFree:true, liveFix:true}, updatedAt:0});
+function merge(s){ const d=defaults(); s=s&&typeof s==='object'?s:{}; return {...d, ...s, streak:{...d.streak,...(s.streak||{})}, stats:{...d.stats,...(s.stats||{})}, settings:{...d.settings,...(s.settings||{})}, days:s.days||{}, done:s.done||{}, mist:s.mist||{}, oral:{d:{},p:{},ai:0,...(s.oral||{})}}; }
+function readLocal(){ try{ return merge(JSON.parse(localStorage.getItem(KEY))); }catch(e){ return defaults(); } }
+let S = readLocal();
+let cloudRef = null, cloudTimer = null;
+
+function save(){
+  S.updatedAt = Date.now();
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  if(cloudRef){ clearTimeout(cloudTimer); cloudTimer = setTimeout(()=>{ cloudRef.set(JSON.parse(JSON.stringify(S))).catch(()=>{}); }, 1200); }
+}
+async function initCloud(){
+  try{
+    if(!window.claude || typeof window.claude.use!=='function') return;
+    const [db,user] = await Promise.all([claude.use('db'), claude.use('user')]);
+    if(!db || !user) return;
+    const id = await user.id();
+    if(!id) return;
+    const ref = db.collection('data/users/'+id).doc('progress');
+    const snap = await ref.get();
+    const remote = snap.exists ? merge(snap.data()) : null;
+    cloudRef = ref;
+    if(remote && remote.updatedAt > S.updatedAt){
+      S = remote; try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+      if(!lessonOpen) renderAll();
+    } else if(S.updatedAt > 0){ save(); }
+    if(currentView==='profile' && !lessonOpen) renderProfile();
+  }catch(e){ cloudRef = null; }
+}
+
+/* ---------- dates, série, xp ---------- */
+const dkey = (d=new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const yesterday = () => dkey(new Date(Date.now()-DAY));
+function streakNow(){ const l=S.streak.last; return (l===dkey()||l===yesterday()) ? S.streak.count : 0; }
+function todayXp(){ return S.days[dkey()]||0; }
+function addXp(n){
+  const t=dkey(); S.xp+=n; S.days[t]=(S.days[t]||0)+n;
+  if(S.streak.last!==t){ S.streak.count = S.streak.last===yesterday() ? S.streak.count+1 : 1; S.streak.last=t; }
+}
+
+/* ---------- index du contenu ---------- */
+const LESSONS = []; const LBY = {};
+UNITS.forEach((u,ui)=>u.lessons.forEach((l,li)=>{ const e={u,l,ui,li,g:LESSONS.length}; LESSONS.push(e); LBY[l.id]=e; }));
+function currentG(){ const e=LESSONS.find(e=>!S.done[e.l.id]); return e ? e.g : -1; }
+
+/* ---------- utilitaires ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const tokens = s => s.replace(/[.?!,…]/g,'').split(/\s+/).filter(Boolean);
+const norm = s => s.toLowerCase().replace(/[’]/g,"'");
+
+/* ---------- son et voix ---------- */
+let actx=null;
+function tone(freqs, dur=0.12, type='sine'){
+  if(!S.settings.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(), t=actx.currentTime+i*dur*0.9;
+      o.type=type; o.frequency.value=f; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.16,t+0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+dur+0.03); });
+  }catch(e){}
+}
+const sndOk = () => tone([660,880],0.11);
+const sndKo = () => tone([220,180],0.16,'triangle');
+const sndWin = () => tone([523,659,784,1047],0.13);
+const canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance!=='undefined';
+function voice(){
+  try{ const vs=speechSynthesis.getVoices(); const acc=S.settings.accent.toLowerCase();
+    return vs.find(v=>v.lang.replace('_','-').toLowerCase()===acc) || vs.find(v=>v.lang.toLowerCase().startsWith('en')) || null; }catch(e){ return null; }
+}
+function speak(text, rate, onend){
+  if(!canSpeak||!text){ if(onend) onend(); return; }
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=S.settings.accent; const v=voice(); if(v) u.voice=v;
+    u.rate=rate||S.settings.rate; if(onend) u.onend=onend; speechSynthesis.speak(u); }catch(e){ if(onend) onend(); }
+}
+if(canSpeak){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
+const sayBtn = (text, cls='') => canSpeak ? `<button class="say ${cls}" data-say="${esc(text)}" aria-label="Écouter">${I.speaker}</button>` : '';
+document.addEventListener('click', e=>{ const b=e.target.closest('[data-say]'); if(b){ e.stopPropagation(); speak(b.dataset.say, b.dataset.rate?+b.dataset.rate:undefined); } });
+
+/* ---------- reconnaissance vocale ----------
+   Micro du navigateur quand la page est ouverte directement (Chrome, Edge, Safari).
+   Dans une page intégrée (Artifact claude.ai), le micro est bloqué : on passe par la dictée du clavier. */
+const SRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const FRAMED = (()=>{ try{ return window.self!==window.top; }catch(e){ return true; } })();
+const micPossible = !!SRec && !FRAMED;
+let micBlocked = false, activeRec = null;
+const useMic = () => micPossible && !micBlocked && S.settings.input!=='type';
+function stopRec(){ if(activeRec){ const r=activeRec; activeRec=null; try{ r.abort(); }catch(e){} } }
+function recognize({onInterim, onFinal, onError}){
+  stopRec();
+  const r = new SRec();
+  r.lang = S.settings.accent; r.interimResults = true; r.maxAlternatives = 4; r.continuous = false;
+  let finals = null, failed = false;
+  r.onresult = e => {
+    const res = [...e.results];
+    onInterim(res.map(x=>x[0].transcript).join(' '));
+    if(res.every(x=>x.isFinal)){
+      const n = Math.max(...res.map(x=>x.length)); finals = [];
+      for(let i=0;i<n;i++) finals.push(res.map(x=>x[Math.min(i,x.length-1)].transcript).join(' ').trim());
+    }
+  };
+  r.onerror = e => { failed = true; if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error)) micBlocked = true; onError(e.error); };
+  r.onend = () => { const mine = activeRec===r; if(mine) activeRec=null; if(failed) return;
+    if(finals && finals.length) onFinal(finals); else if(mine) onError('no-speech'); else onError('aborted'); };
+  activeRec = r;
+  try{ if(canSpeak) speechSynthesis.cancel(); r.start(); }catch(e){ failed = true; activeRec = null; onError('start'); }
+}
+/* Zone de réponse orale : bouton micro, ou champ à dicter avec le clavier. */
+function speakInput(host, onAnswer, opts={}){
+  if(useMic()){
+    host.innerHTML = `<div class="mic-area"><button class="mic" aria-label="Parler">${I.mic}</button>
+      <div class="mic-hint">Touche le micro et parle</div><div class="heard"></div></div>`;
+    const btn=host.querySelector('.mic'), hint=host.querySelector('.mic-hint'), heard=host.querySelector('.heard');
+    let live=false;
+    const idle = msg => { live=false; btn.classList.remove('live'); hint.textContent = msg || 'Touche le micro et parle'; };
+    btn.onclick = () => {
+      if(live){ try{ activeRec && activeRec.stop(); }catch(e){} return; }
+      live=true; btn.classList.add('live'); hint.textContent='Je t\'écoute… touche à nouveau pour finir'; heard.textContent='';
+      recognize({
+        onInterim: t => { heard.textContent = t; },
+        onFinal: alts => { idle(); heard.textContent = '« '+alts[0]+' »'; onAnswer(alts); },
+        onError: err => {
+          if(micBlocked){ speakInput(host, onAnswer, opts); return; }
+          idle(err==='aborted' ? '' : err==='no-speech' ? 'Je n\'ai rien entendu. Touche le micro et réessaie.'
+            : err==='network' ? 'La reconnaissance vocale a besoin d\'internet. Vérifie ta connexion.' : 'Le micro n\'a pas fonctionné. Réessaie.');
+        }
+      });
+    };
+    return {typed:false, value:()=>''};
+  }
+  host.innerHTML = `<div class="dict"><input id="dictIn" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="send"
+      aria-label="Ta réponse en anglais" placeholder="Dicte ta réponse en anglais">
+    <small>${I.mic}<span>${micBlocked?'Le micro du navigateur est bloqué ici. ':''}Touche le champ, puis l'icône micro de ton clavier pour dicter.</span></small></div>`;
+  const inp = host.querySelector('#dictIn');
+  inp.oninput = () => opts.onChange && opts.onChange(inp.value.trim().length>0);
+  inp.onkeydown = e => { if(e.key==='Enter' && inp.value.trim()){ e.preventDefault(); onAnswer([inp.value.trim()]); } };
+  return {typed:true, value:()=>inp.value.trim()};
+}
+
+/* ---------- comparaison de ce qui a été dit ---------- */
+const NUMW = {zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,
+  fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+const ORDW = {first:'1st',second:'2nd',third:'3rd',fourth:'4th',fifth:'5th',sixth:'6th',seventh:'7th',eighth:'8th',ninth:'9th',tenth:'10th',
+  eleventh:'11th',twelfth:'12th',thirteenth:'13th',fourteenth:'14th',fifteenth:'15th',sixteenth:'16th',seventeenth:'17th',eighteenth:'18th',
+  nineteenth:'19th',twentieth:'20th',thirtieth:'30th'};
+const own = (o,k) => Object.prototype.hasOwnProperty.call(o,k);
+function normSpeech(s){
+  s = String(s).toLowerCase().replace(/[’‘`]/g,"'")
+    .replace(/(\d),(?=\d{3}\b)/g,'$1')
+    .replace(/[€£$]\s?(\d[\d.]*)/g,(m,n)=>n+' '+({'€':'euros','£':'pounds','$':'dollars'})[m[0]])
+    .replace(/%/g,' percent ').replace(/\bper cent\b/g,'percent')
+    .replace(/\b([ap])\.\s?m\b\.?/g,'$1m')
+    .replace(/(\d):(\d)/g,'$1 $2')
+    .replace(/(\d)\.(\d)/g,'$1xdotx$2')
+    .replace(/[^a-z0-9' ]+/g,' ');
+  const words = [];
+  for(let w of s.split(/\s+/)){
+    w = w.replace(/^'+|'+$/g,''); if(!w) continue;
+    const exp = w==="can't"||w==='cannot' ? 'can not' : w==="won't" ? 'will not' : w==="let's" ? 'let us'
+      : w.replace(/n't$/,' not').replace(/'m$/,' am').replace(/'re$/,' are').replace(/'ve$/,' have').replace(/'ll$/,' will').replace(/'d$/,' would').replace(/'s$/,' is');
+    for(let t of exp.split(' ')){ t=t.replace(/'/g,'').replace('xdotx','.'); if(!t) continue; words.push(t==='okay'?'ok':t); }
+  }
+  const out = [];
+  for(let i=0;i<words.length;){
+    const w = words[i];
+    if(own(NUMW,w)){
+      let total=0, curr=0, j=i;
+      while(j<words.length){
+        const x = words[j];
+        if(own(NUMW,x)){
+          const v = NUMW[x];
+          if(j===i || curr===0) curr = v;
+          else if(curr%100>=20 && curr%10===0 && v<10) curr += v;
+          else if(curr%100===0 && v<100) curr += v;
+          else break;
+          j++;
+        }
+        else if(x==='hundred'){ curr=(curr||1)*100; j++; }
+        else if(x==='thousand'){ total+=(curr||1)*1000; curr=0; j++; }
+        else if(x==='and' && (words[j-1]==='hundred'||words[j-1]==='thousand') && own(NUMW,words[j+1]||'')){ j++; }
+        else break;
+      }
+      let num = String(total+curr);
+      if(words[j]==='point' && own(NUMW,words[j+1]||'') && NUMW[words[j+1]]<10){
+        j++; let dec=''; while(j<words.length && own(NUMW,words[j]) && NUMW[words[j]]<10){ dec+=NUMW[words[j]]; j++; } num += '.'+dec;
+      }
+      out.push(num); i=j;
+    } else { out.push(own(ORDW,w) ? ORDW[w] : w); i++; }
+  }
+  return out;
+}
+function lcs(a,b){
+  const dp = Array.from({length:a.length+1},()=>new Array(b.length+1).fill(0));
+  for(let i=a.length-1;i>=0;i--) for(let j=b.length-1;j>=0;j--) dp[i][j] = a[i]===b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  return dp[0][0];
+}
+function scoreSpeech(target, alts){
+  const t = normSpeech(target); let best = {score:0, alt:alts[0]||''};
+  for(const a of alts){ const n=normSpeech(a); if(!n.length||!t.length) continue; const s=lcs(t,n)/t.length; if(s>best.score) best={score:s, alt:a}; }
+  return best;
+}
+function bestAnswer(answers, alts){
+  return answers.map(a=>scoreSpeech(a,alts)).reduce((x,y)=>y.score>x.score?y:x, {score:0, alt:alts[0]||''});
+}
+function hasKey(said, key){
+  const h = ' '+normSpeech(said).join(' ')+' ';
+  return key.split('|').some(k=>h.includes(normSpeech(k).join(' ')));
+}
+function coloredTarget(text, res){
+  const heard = new Set(res && res.alt ? normSpeech(res.alt) : []);
+  return text.split(/\s+/).map(w=>{ const n=normSpeech(w); const ok=n.length && n.every(t=>heard.has(t));
+    return `<span class="${ok?'w-ok':'w-ko'}">${esc(w)}</span>`; }).join(' ');
+}
+
+/* =====================================================================
+   CONSTRUCTION DES EXERCICES
+   ===================================================================== */
+function vocabEx(e, i, reverse){
+  const [fr,en] = e.l.vocab[i];
+  const pool = e.u.lessons.flatMap(l=>l.vocab).filter(p=>p[1]!==en && p[0]!==fr);
+  const others = shuffle(pool).slice(0,2);
+  return reverse
+    ? {t:'mcq', key:e.l.id+':v'+i, title:'Que signifie…', q:'« '+en+' »', sayQ:en, a:fr, o:others.map(p=>p[0])}
+    : {t:'mcq', key:e.l.id+':v'+i, title:'Comment dit-on…', q:'« '+fr+' »', a:en, o:others.map(p=>p[1]), say:en};
+}
+function exByKey(key){
+  const [lid, rest] = key.split(':'); const e=LBY[lid]; if(!e) return null;
+  if(rest==='p') return {t:'pairs', key, pairs:e.l.vocab};
+  if(rest[0]==='v') return vocabEx(e, +rest.slice(1), Math.random()<.5);
+  const it=e.l.items[+rest]; return it ? {...it, key} : null;
+}
+function withListen(list){
+  if(!canSpeak) return list;
+  const i = list.findIndex(x=>x.t==='order');
+  if(i>=0) list[i] = {...list[i], t:'listen'};
+  return list;
+}
+function buildLesson(e){
+  const v = shuffle(e.l.vocab.map((_,i)=>i)).slice(0,2);
+  const items = withListen(shuffle(e.l.items.map((it,i)=>({...it, key:e.l.id+':'+i}))));
+  const [rep, tr] = speakExs(e, items);
+  const out = [vocabEx(e,v[0],false), ...items.slice(0,2), {t:'pairs', key:e.l.id+':p', pairs:e.l.vocab}, ...(rep?[rep]:[]), vocabEx(e,v[1],true), ...items.slice(2)];
+  if(tr) out.splice(out.length-1, 0, tr);
+  return out;
+}
+/* Deux exercices oraux par leçon : lire une phrase à voix haute, puis traduire une phrase à l'oral. */
+const speakingOn = () => S.settings.speakInLessons && Date.now() > (S.speakOffUntil||0);
+function speakExs(e, items){
+  if(!speakingOn()) return [];
+  const listened = items.find(x=>x.t==='listen');
+  const sent = shuffle(e.l.items.filter(it=>it.t==='fill'||it.t==='order'));
+  const orders = shuffle(e.l.items.filter(it=>it.t==='order' && (!listened || it.en!==listened.en)));
+  const r = sent[0], t = orders.find(it=>it!==r);
+  return [ r ? {t:'speak', key:e.l.id+':s', text: r.t==='fill' ? r.s.replace('___',r.a) : r.en} : null,
+           t ? {t:'speakfr', key:e.l.id+':sf', fr:t.fr, en:t.en} : null ];
+}
+function dueKeys(){ const now=Date.now(); return Object.entries(S.mist).filter(([,m])=>m.d<=now).sort((a,b)=>a[1].d-b[1].d).map(([k])=>k); }
+function buildReview(){
+  const out=[]; const seen=new Set();
+  for(const k of dueKeys()){ if(out.length>=8) break; if(k.endsWith(':p')) continue; const x=exByKey(k); if(x){ out.push(x); seen.add(k); } }
+  const doneLessons = LESSONS.filter(e=>S.done[e.l.id]);
+  let guard=0;
+  while(out.length<8 && doneLessons.length && guard++<60){
+    const e=pick(doneLessons); const i=Math.floor(Math.random()*e.l.items.length); const k=e.l.id+':'+i;
+    if(!seen.has(k)){ seen.add(k); out.push({...e.l.items[i], key:k}); }
+  }
+  return withListen(shuffle(out));
+}
+function record(key, ok){
+  if(!key || key.endsWith(':p')) return;
+  S.stats.answered++; if(ok) S.stats.correct++;
+  const m=S.mist[key];
+  if(!ok){ S.mist[key]={b:0,d:Date.now()}; return; }
+  if(m){ m.b++; if(m.b>=4) delete S.mist[key]; else m.d=Date.now()+[0,1,3,7][m.b]*DAY; }
+}
+
+/* =====================================================================
+   LEÇON
+   ===================================================================== */
+let lessonOpen=false, LS=null, cur=null;
+
+function startLesson(kind, lessonId){
+  closeSheet();
+  let queue, extra={};
+  if(kind==='lesson') queue = buildLesson(LBY[lessonId]);
+  else if(kind==='review') queue = buildReview();
+  else if(kind==='dialog'){ const d=DIALOGS.find(x=>x.id===lessonId); extra={dialog:d, chat:[]}; queue=d.turns.map((t,i)=>({t:'turn', key:'d:'+d.id+':'+i, ...t})); }
+  else { const p=PRONUN.find(x=>x.id===lessonId); queue=shuffle(p.items).map(([text,tip],i)=>({t:'speak', key:'p:'+p.id+':'+i, text, tip})); }
+  if(!queue.length) return;
+  LS = {kind, lessonId, queue, idx:0, mistakes:0, tries:0, oks:0, requeued:new Set(), t0:Date.now(), ended:false, ...extra};
+  lessonOpen=true; $('lesson').hidden=false; document.body.style.overflow='hidden';
+  $('lQuit').innerHTML=I.close;
+  renderEx();
+}
+function closeLesson(){
+  stopRec(); lessonOpen=false; $('lesson').hidden=true; document.body.style.overflow=''; LS=null; cur=null;
+  if(canSpeak) try{ speechSynthesis.cancel(); }catch(e){}
+  renderAll();
+}
+function renderLessonHead(){
+  const n = LS.ended ? LS.queue.length : LS.idx + (cur && cur.checked ? 1 : 0);
+  $('lBar').style.width = Math.min(100, n/LS.queue.length*100)+'%';
+  const lab = {lesson:'LEÇON', review:'RÉVISION', dialog:'DIALOGUE', pron:'PRONONCIATION'}[LS.kind];
+  $('lHearts').innerHTML = `<span class="l-kind">${lab}</span>`;
+}
+function setFoot(state, html){
+  const f=$('lFoot'); f.classList.remove('ok','ko'); if(state) f.classList.add(state);
+  const fb=$('lFb'); if(html){ fb.innerHTML=html; fb.hidden=false; } else { fb.hidden=true; fb.innerHTML=''; }
+}
+function setMain(label, enabled, cls){
+  const b=$('lMain'); b.textContent=label; b.disabled=!enabled; b.className='btn block'+(cls?' '+cls:'');
+}
+
+function renderEx(){
+  stopRec();
+  const ex = LS.queue[LS.idx];
+  cur = {ex, checked:false, ready:false};
+  renderLessonHead();
+  setFoot(null,null); $('lAlt').hidden = true;
+  const body=$('lBody'); body.scrollTop=0;
+  ({mcq:renderMcq, fill:renderFill, order:renderOrder, listen:renderOrder, pairs:renderPairs,
+    speak:renderSpeak, speakfr:renderSpeakFr, turn:renderTurn})[ex.t](ex, body);
+  setMain('Vérifier', false);
+}
+function ready(v){ cur.ready=v; if(!cur.checked) $('lMain').disabled=!v; }
+
+/* --- QCM --- */
+function renderMcq(ex, body){
+  const opts = shuffle([ex.a, ...ex.o]);
+  body.innerHTML = `<h2 class="ex-title">${esc(ex.title||'Choisis la bonne réponse')}</h2>
+    <div class="prompt">${ex.sayQ?sayBtn(ex.sayQ):''}<div class="bubble">${esc(ex.q)}</div></div>
+    <div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${i+1}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
+  if(ex.sayQ) speak(ex.sayQ);
+  cur.sel=null; cur.opts=opts;
+  body.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(cur.checked) return;
+    body.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); cur.sel=+b.dataset.i; ready(true); });
+  cur.choose = i => body.querySelector(`.opt[data-i="${i}"]`)?.click();
+  cur.check = () => {
+    const ok = cur.opts[cur.sel]===ex.a;
+    body.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const v=cur.opts[+b.dataset.i];
+      if(v===ex.a) b.classList.add('right'); else if(+b.dataset.i===cur.sel) b.classList.add('wrong'); });
+    return ok;
+  };
+  cur.solution = ex.a;
+}
+
+/* --- Phrase à trou --- */
+function renderFill(ex, body){
+  const opts = shuffle([ex.a, ...ex.o]);
+  const [pre, post] = ex.s.split('___');
+  body.innerHTML = `<h2 class="ex-title">Complète la phrase</h2>
+    <div class="sentence">${esc(pre)}<span class="blank" id="blank">&nbsp;</span>${esc(post)}</div>
+    <div class="chips">${opts.map((o,i)=>`<button class="chip" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+  cur.sel=null; cur.opts=opts;
+  body.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ if(cur.checked) return;
+    body.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); cur.sel=+b.dataset.i;
+    $('blank').textContent=opts[cur.sel]; ready(true); });
+  cur.choose = i => body.querySelector(`.chip[data-i="${i}"]`)?.click();
+  cur.check = () => { body.querySelectorAll('.chip').forEach(b=>b.disabled=true); return cur.opts[cur.sel]===ex.a; };
+  cur.solution = ex.s.replace('___', ex.a);
+}
+
+/* --- Remettre dans l'ordre / Dictée --- */
+function renderOrder(ex, body){
+  const target = tokens(ex.en);
+  const unitL = LBY[ex.key.split(':')[0]];
+  const pool = unitL ? unitL.u.lessons.flatMap(l=>l.items).filter(x=>x.t==='order'&&x.en!==ex.en).flatMap(x=>tokens(x.en)) : [];
+  const lower = new Set(target.map(norm));
+  const extra = shuffle([...new Set(pool)].filter(w=>!lower.has(norm(w)))).slice(0, target.length>8?2:3);
+  const bank = shuffle([...target, ...extra]).map((w,i)=>({w,i,used:false}));
+  const listen = ex.t==='listen';
+  body.innerHTML = listen
+    ? `<h2 class="ex-title">Écris ce que tu entends</h2>
+       <div class="listen-btns">${sayBtn(ex.en,'big')}<button class="say slow" data-say="${esc(ex.en)}" data-rate="0.6" aria-label="Écouter lentement">0,6×</button></div>`
+    : `<h2 class="ex-title">Traduis cette phrase</h2>
+       <div class="prompt"><div class="bubble">${esc(ex.fr)}</div></div>`;
+  body.insertAdjacentHTML('beforeend', `<div class="answer" id="ans"></div><div class="bank" id="bank"></div>`);
+  if(listen) setTimeout(()=>speak(ex.en), 250);
+  cur.ans=[];
+  const draw=()=>{
+    $('ans').innerHTML = cur.ans.map((t,k)=>`<button class="tok" data-k="${k}">${esc(t.w)}</button>`).join('');
+    $('bank').innerHTML = bank.map(t=>`<button class="tok ${t.used?'used':''}" data-i="${t.i}" ${t.used?'disabled aria-hidden="true"':''}>${esc(t.w)}</button>`).join('');
+    $('ans').querySelectorAll('.tok').forEach(b=>b.onclick=()=>{ if(cur.checked) return; const t=cur.ans.splice(+b.dataset.k,1)[0]; t.used=false; draw(); });
+    $('bank').querySelectorAll('.tok').forEach(b=>b.onclick=()=>{ if(cur.checked) return; const t=bank[+b.dataset.i]; if(t.used) return; t.used=true; cur.ans.push(t); draw(); });
+    ready(cur.ans.length>0);
+  };
+  draw();
+  cur.choose = i => { const free=bank.filter(t=>!t.used); if(free[i]){ free[i].used=true; cur.ans.push(free[i]); draw(); } };
+  cur.back = () => { const t=cur.ans.pop(); if(t){ t.used=false; draw(); } };
+  cur.check = () => { body.querySelectorAll('.tok').forEach(b=>b.disabled=true);
+    return cur.ans.map(t=>norm(t.w)).join(' ') === target.map(norm).join(' '); };
+  cur.solution = ex.en;
+  cur.extra = listen ? ex.fr : '';
+}
+
+/* --- Paires --- */
+function renderPairs(ex, body){
+  const left = shuffle(ex.pairs.map((p,i)=>({s:p[0],i})));
+  const right = shuffle(ex.pairs.map((p,i)=>({s:p[1],i})));
+  body.innerHTML = `<h2 class="ex-title">Associe les paires</h2>
+    <div class="pairs"><div class="col">${left.map(p=>`<button class="pair" data-side="l" data-i="${p.i}">${esc(p.s)}</button>`).join('')}</div>
+    <div class="col">${right.map(p=>`<button class="pair" data-side="r" data-i="${p.i}">${esc(p.s)}</button>`).join('')}</div></div>`;
+  let sel=null, matched=0; cur.hadError=false;
+  body.querySelectorAll('.pair').forEach(b=>b.onclick=()=>{
+    if(b.classList.contains('matched')||cur.checked) return;
+    if(b.dataset.side==='r') speak(ex.pairs[+b.dataset.i][1]);
+    if(!sel || sel.dataset.side===b.dataset.side){ if(sel) sel.classList.remove('sel'); sel=b; b.classList.add('sel'); return; }
+    if(sel.dataset.i===b.dataset.i){
+      [sel,b].forEach(x=>{ x.classList.remove('sel'); x.classList.add('matched'); x.disabled=true; }); sel=null; matched++; tone([700],0.07);
+      if(matched===ex.pairs.length){ cur.ready=true; doCheck(); }
+    } else {
+      cur.hadError=true; const a=sel; [a,b].forEach(x=>{ x.classList.remove('sel'); x.classList.add('err'); });
+      setTimeout(()=>[a,b].forEach(x=>x.classList.remove('err')),350); sel=null; sndKo();
+    }
+  });
+  cur.check = () => true;
+  cur.solution = '';
+}
+
+/* --- Oral : lire à voix haute, traduire à l'oral, dialogue --- */
+const SPEAK_T = ['speak','speakfr','turn'];
+function speakHost(body){
+  const host = document.createElement('div'); host.className='spk'; body.appendChild(host);
+  cur.input = speakInput(host, alts=>{ if(!cur||cur.checked) return; cur.alts=alts; cur.ready=true; doCheck(); }, {onChange:v=>ready(v)});
+}
+function skipLink(body){
+  if(LS.kind!=='lesson') return;
+  body.insertAdjacentHTML('beforeend','<button class="linkbtn skip" id="noSpeak">Je ne peux pas parler maintenant</button>');
+  $('noSpeak').onclick = skipSpeaking;
+}
+function skipSpeaking(){
+  S.speakOffUntil = Date.now()+3600e3; save(); stopRec();
+  LS.queue = LS.queue.filter((x,i)=>i<=LS.idx || !SPEAK_T.includes(x.t));
+  LS.idx++;
+  if(LS.idx>=LS.queue.length) return finishLesson();
+  renderEx();
+}
+const said = () => cur.alts || [cur.input.value()];
+function renderSpeak(ex, body){
+  body.innerHTML = `<h2 class="ex-title">Lis à voix haute</h2>
+    <div class="prompt">${sayBtn(ex.text)}<div class="bubble target">${esc(ex.text)}</div></div>
+    ${ex.tip?`<div class="tipline">${esc(ex.tip)}</div>`:''}`;
+  speakHost(body); skipLink(body);
+  cur.check = () => { const r=scoreSpeech(ex.text, said()); cur.res=r; return r.score >= (normSpeech(ex.text).length<=2 ? 1 : 0.75); };
+  cur.solution = ex.text;
+}
+function renderSpeakFr(ex, body){
+  body.innerHTML = `<h2 class="ex-title">Dis-le en anglais</h2>
+    <div class="prompt"><div class="bubble">${esc(ex.fr)}</div></div>`;
+  speakHost(body); skipLink(body);
+  cur.check = () => { const r=scoreSpeech(ex.en, said()); cur.res=r; return r.score>=0.7; };
+  cur.solution = ex.en;
+}
+function chatMsg(who, text, hidden){
+  return who==='them'
+    ? `<div class="msg them${hidden?' hidden-text':''}">${sayBtn(text,'inline')}<div>${esc(text)}</div></div>`
+    : `<div class="msg me"><div>${esc(text)}</div></div>`;
+}
+function renderTurn(ex, body){
+  const hideLbl = () => S.settings.hideText ? 'Afficher le texte' : 'Masquer le texte (écoute pure)';
+  body.innerHTML = `<div class="tipline ctx">${esc(LS.dialog.ctx)}</div>
+    <div class="chat">${LS.chat.map(m=>chatMsg(m.who,m.text,false)).join('')}${chatMsg('them',ex.them,S.settings.hideText)}</div>
+    <div class="hintline"><b>À toi :</b> ${esc(ex.hint)}</div>
+    <button class="linkbtn hide-tg" id="hideTg">${hideLbl()}</button>`;
+  $('hideTg').onclick = () => { S.settings.hideText=!S.settings.hideText; save();
+    const ms=body.querySelectorAll('.msg.them'); ms[ms.length-1].classList.toggle('hidden-text', S.settings.hideText); $('hideTg').textContent=hideLbl(); };
+  setTimeout(()=>{ if(cur && cur.ex===ex && !cur.checked) speak(ex.them); }, 250);
+  speakHost(body);
+  body.scrollTop = body.scrollHeight;
+  cur.check = () => { const alts=said(); const r=bestAnswer(ex.a, alts); cur.res=r;
+    const keysOk = ex.k.every(k=>alts.some(a=>hasKey(a,k)));
+    return r.score>=0.6 || (keysOk && normSpeech(r.alt).length>=3); };
+  cur.solution = ex.a[0];
+}
+function checkSpoken(ex, ok){
+  stopRec();
+  const heard = (cur.res && cur.res.alt) || '';
+  LS.tries++; if(ok) LS.oks++;
+  const heardHtml = heard ? `<div class="fb-ex">Tu as dit : « ${esc(heard)} »</div>` : '';
+  if(ex.t==='turn'){ LS.chat.push({who:'them',text:ex.them},{who:'me',text:ok&&heard?heard:cur.solution}); cur.pushed=true; }
+  if(ok){
+    sndOk();
+    const model = ex.t==='speak' ? '' : `<div class="fb-ex">${ex.t==='turn'?'Autre formulation possible':'Formulation type'} : <b>${esc(cur.solution)}</b></div>`;
+    setFoot('ok', `<div class="fb-title">${I.check}${pick(PRAISE)}</div>${heardHtml}${model}`);
+    setMain('Continuer', true, 'ok');
+  } else {
+    sndKo();
+    const sol = ex.t==='speak' ? coloredTarget(ex.text, cur.res) : esc(cur.solution);
+    setFoot('ko', `<div class="fb-title">${I.close}${ex.t==='speak'?'Pas tout à fait :':'Tu peux dire :'}</div>
+      <div class="fb-sol fb-say">${sayBtn(cur.solution,'inline')}<span>${sol}</span></div>${heardHtml}`);
+    setMain('Continuer', true, 'ko');
+    $('lAlt').hidden = false;
+  }
+  renderLessonHead(); save();
+}
+$('lAlt').onclick = () => {
+  if(!cur || !cur.checked) return;
+  if(cur.pushed) LS.chat.splice(-2);
+  renderEx();
+};
+
+/* --- Vérification --- */
+const PRAISE = ['Excellent !','Bien joué !','Parfait !','Exactement !','Bravo !','Impeccable !'];
+function doCheck(){
+  if(!cur || cur.checked || !cur.ready) return;
+  cur.checked = true;
+  const ex = cur.ex;
+  const ok = cur.check();
+  if(SPEAK_T.includes(ex.t)) return checkSpoken(ex, ok);
+  if(ex.t!=='pairs') record(ex.key, ok);
+  if(ok){
+    sndOk();
+    setFoot('ok', `<div class="fb-title">${I.check}${pick(PRAISE)}</div>${ex.t!=='mcq'&&ex.t!=='pairs'&&ex.t!=='fill'?`<div class="fb-ex">${esc(cur.extra||'')}</div>`:''}${ex.ex?`<div class="fb-ex">${esc(ex.ex)}</div>`:''}`);
+    if(S.settings.autoread && ex.say && ex.t!=='listen') speak(ex.say);
+    setMain('Continuer', true, 'ok');
+  } else {
+    LS.mistakes++; sndKo();
+    if(!LS.requeued.has(ex.key)){ LS.requeued.add(ex.key); LS.queue.push({...ex}); }
+    const sol = cur.solution ? `<div class="fb-sol">${esc(cur.solution)}</div>` : '';
+    setFoot('ko', `<div class="fb-title">${I.close}Réponse correcte :</div>${sol}${cur.extra?`<div class="fb-ex">${esc(cur.extra)}</div>`:''}${ex.ex?`<div class="fb-ex">${esc(ex.ex)}</div>`:''}`);
+    if(S.settings.autoread && ex.say) speak(ex.say);
+    setMain('Continuer', true, 'ko');
+  }
+  renderLessonHead();
+  save();
+}
+function next(){
+  if(LS.ended){ return closeLesson(); }
+  LS.idx++;
+  if(LS.idx>=LS.queue.length) return finishLesson();
+  renderEx();
+}
+$('lMain').onclick = () => { if(!LS) return; if(LS.ended || (cur && cur.checked)) next(); else doCheck(); };
+
+function finishLesson(){
+  LS.ended=true; cur=null;
+  const perfect = LS.mistakes===0;
+  let xp = LS.kind==='lesson' ? 10 + (perfect?5:0) : 10;
+  const before = streakNow(), goalBefore = todayXp()>=S.settings.goal;
+  addXp(xp);
+  if(LS.kind==='lesson'){ S.done[LS.lessonId]=(S.done[LS.lessonId]||0)+1; }
+  else if(LS.kind!=='review'){ const o=S.oral[LS.kind==='dialog'?'d':'p']; o[LS.lessonId]=(o[LS.lessonId]||0)+1; }
+  S.stats.lessons++;
+  save(); sndWin();
+  const secs = Math.round((Date.now()-LS.t0)/1000);
+  const answered = LS.queue.filter(x=>x.t!=='pairs' && !SPEAK_T.includes(x.t)).length + LS.tries;
+  const acc = Math.max(0, Math.round((answered-LS.mistakes-(LS.tries-LS.oks))/Math.max(1,answered)*100));
+  const st = streakNow();
+  const goalNow = todayXp()>=S.settings.goal;
+  const msg = st>before ? `Série : <b>${st} jour${st>1?'s':''}</b>. Reviens demain pour la prolonger.`
+    : goalNow && !goalBefore ? 'Objectif du jour atteint.'
+    : LS.kind==='lesson' ? (perfect ? 'Aucune erreur, +5 XP de bonus.' : 'Tes erreurs reviendront dans Révision.')
+    : LS.kind==='review' ? 'Tes points faibles reculent.' : 'Refais-le demain : la répétition fixe les tournures.';
+  $('lBar').style.width='100%';
+  $('lBody').innerHTML = `<div class="done-screen">
+    <svg class="medal" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="var(--gold-soft)"/><circle cx="60" cy="60" r="38" fill="var(--gold)"/>
+      <path d="m60 36 7 14.5 16 2.3-11.6 11.3 2.8 16L60 72.6l-14.2 7.5 2.8-16L37 52.8l16-2.3z" fill="#fff"/></svg>
+    <h2>${({lesson:perfect?'Leçon parfaite !':'Leçon terminée !', review:'Révision terminée !', dialog:'Dialogue terminé !', pron:'Série terminée !'})[LS.kind]}</h2>
+    <p>${msg}</p>
+    <div class="done-tiles">
+      <div class="tile" style="--tc:var(--gold)"><div class="tl">XP</div><div class="tv num">+${xp}</div></div>
+      <div class="tile" style="--tc:var(--ok)"><div class="tl">Précision</div><div class="tv num">${acc}%</div></div>
+      <div class="tile" style="--tc:var(--primary)"><div class="tl">Temps</div><div class="tv num">${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</div></div>
+    </div></div>`;
+  setFoot(null,null); setMain('Continuer', true);
+  renderLessonHead();
+}
+$('lQuit').onclick = () => {
+  if(!LS || LS.ended) return closeLesson();
+  openSheet(`<div class="eyebrow">Quitter la leçon</div><h3>Tu t'arrêtes là ?</h3><p>Ta progression dans cette leçon sera perdue.</p>
+    <div class="row"><button class="btn" id="shStay">Continuer la leçon</button><button class="btn ghost" id="shLeave">Quitter</button></div>`);
+  $('shStay').onclick=closeSheet; $('shLeave').onclick=()=>{ closeSheet(); closeLesson(); };
+};
+document.addEventListener('keydown', e=>{
+  if(!lessonOpen || $('sheetHost').firstChild) { if(e.key==='Escape') closeSheet(); return; }
+  if(e.target.closest && e.target.closest('textarea,input')) return;
+  if(e.key==='Enter'){ e.preventDefault(); $('lMain').click(); return; }
+  if(e.key==='Escape'){ $('lQuit').click(); return; }
+  if(cur && !cur.checked){
+    if(/^[1-9]$/.test(e.key) && cur.choose){ cur.choose(+e.key-1); }
+    if(e.key==='Backspace' && cur.back){ e.preventDefault(); cur.back(); }
+  }
+});
+
+/* =====================================================================
+   FEUILLES (bas d'écran)
+   ===================================================================== */
+function openSheet(html){
+  $('sheetHost').innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  $('scrim').onclick = e => { if(e.target.id==='scrim') closeSheet(); };
+  const f=$('sheetHost').querySelector('button'); if(f) f.focus();
+}
+function closeSheet(){ $('sheetHost').innerHTML=''; }
+function startReviewOrExplain(){
+  if(!LESSONS.some(e=>S.done[e.l.id]) && !dueKeys().length){ setView('review'); return; }
+  startLesson('review');
+}
+function lessonSheet(g){
+  const e=LESSONS[g]; const done=S.done[e.l.id]||0;
+  openSheet(`<div class="eyebrow">Unité ${e.ui+1} · Leçon ${e.li+1}/${e.u.lessons.length} · ${esc(e.u.level)}</div><h3>${esc(e.l.title)}</h3>
+    <p>${e.l.vocab.slice(0,3).map(v=>esc(v[1])).join(' · ')}…</p>
+    <p>${done?`Terminée ${done} fois. Refais-la pour ancrer le vocabulaire.`:'Environ 10 exercices, 3 à 5 minutes.'} +10 XP, +5 si aucune erreur.</p>
+    <div class="row"><button class="btn" id="shGo" style="background:${e.u.color};box-shadow:0 4px 0 ${e.u.ledge};color:#fff">${done?'Refaire':'Commencer'}</button></div>`);
+  $('shGo').onclick=()=>startLesson('lesson', e.l.id);
+}
+
+/* =====================================================================
+   VUES
+   ===================================================================== */
+let currentView='path';
+function renderTop(){
+  const st=streakNow();
+  $('topStreak').className='stat-pill flame'+(S.streak.last===dkey()?'':' cold');
+  $('topStreak').innerHTML=I.flame+`<span class="num">${st}</span>`;
+  $('topXp').innerHTML=I.bolt+`<span class="num">${S.xp}</span>`;
+}
+function renderNav(){
+  const due=dueKeys().length;
+  const tabs=[['path','Parcours',I.path],['oral','Oral',I.mic],['review','Révision',I.review],...(aiAvailable()?[['coach','Coach',I.coach]]:[]),['profile','Profil',I.user]];
+  $('nav').innerHTML=tabs.map(([id,label,ic])=>`<button class="${currentView===id?'on':''}" data-v="${id}" aria-current="${currentView===id?'page':'false'}">${ic}${label}${id==='review'&&due?`<span class="badge num">${due}</span>`:''}</button>`).join('');
+  $('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+}
+function setView(v){
+  currentView=v;
+  if(v!=='oral') stopRec();
+  ['path','oral','review','coach','profile'].forEach(x=>$('v-'+x).hidden = x!==v);
+  try{ localStorage.setItem(KEY+'-view', v); }catch(e){}
+  renderAll(); window.scrollTo(0,0);
+}
+function renderAll(){
+  renderTop(); renderNav();
+  if(currentView==='path') renderPath();
+  if(currentView==='oral') renderOral();
+  if(currentView==='review') renderReview();
+  if(currentView==='coach') renderCoach();
+  if(currentView==='profile') renderProfile();
+}
+
+function renderPath(){
+  const goal=S.settings.goal, tx=todayXp(), due=dueKeys().length;
+  const cg=currentG();
+  const offsets=[0,58,84,58,0,-58,-84,-58];
+  let html=`<div class="today">
+    <div class="today-row"><h2>Objectif du jour</h2><span class="muted num">${Math.min(tx,goal)} / ${goal} XP</span></div>
+    <div class="bar"><i style="width:${Math.min(100,tx/goal*100)}%"></i></div>
+    ${due?`<div class="today-row"><span class="muted">${due} point${due>1?'s':''} à revoir aujourd'hui.</span><button class="btn small gold cta-review" id="goReview">Réviser</button></div>`
+      : `<span class="muted">${tx>=goal?'Objectif atteint. Une leçon de plus consolide la série.':'Une leçon rapporte 10 à 15 XP.'}</span>`}
+    <div class="oral-cta"><span class="muted">À l'oral : ${aiAvailable()?'discussions avec Claude, ':''}dialogues, prononciation.</span><button class="btn small" id="goOral">Parler</button></div>
+  </div>`;
+  let k=0;
+  UNITS.forEach((u,ui)=>{
+    const es=LESSONS.filter(e=>e.ui===ui);
+    const nDone=es.filter(e=>S.done[e.l.id]).length;
+    html+=`<section class="unit" style="--uc:${u.color};--ucl:${u.ledge}">
+      <div class="unit-banner" style="background:${u.color}">
+        <div class="eyebrow">Unité ${ui+1}<span class="cefr">${esc(u.level)}</span></div>
+        <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>
+        <div class="uprog num">${nDone} / ${es.length} leçon${es.length>1?'s':''}</div>
+      </div><div class="path">`;
+    es.forEach(e=>{
+      const done=!!S.done[e.l.id], isCur=e.g===cg;
+      const cls = done?'done':'';
+      const ic = done?I.check:I.star;
+      html+=`<div class="node-wrap${isCur?' has-tag':''}" style="transform:translateX(${offsets[k++%offsets.length]}px)">
+        ${isCur?`<div class="node-tag">${S.stats.lessons?'Continuer':'Commencer'}</div>`:''}
+        <button class="node ${cls}${isCur?' current':''}" data-g="${e.g}" aria-label="${esc(e.l.title)}${done?' (terminée)':''}">${ic}</button>
+        <div class="node-label">${esc(e.l.title)}</div></div>`;
+    });
+    html+=`</div></section>`;
+  });
+  html+=`<div class="card" style="text-align:center;justify-items:center"><div style="color:var(--gold);width:44px">${I.trophy}</div>
+    <h2>Fin du parcours</h2><p>${LESSONS.length} leçons pour couvrir les situations de travail courantes. La Révision garde tout en mémoire ensuite.</p></div>`;
+  $('v-path').innerHTML=html;
+  $('v-path').querySelectorAll('.node').forEach(b=>b.onclick=()=>lessonSheet(+b.dataset.g));
+  const gr=$('goReview'); if(gr) gr.onclick=()=>startLesson('review');
+  $('goOral').onclick=()=>setView('oral');
+}
+
+function exLabel(key){
+  const [lid,rest]=key.split(':'); const e=LBY[lid]; if(!e) return null;
+  if(rest[0]==='v'){ const p=e.l.vocab[+rest.slice(1)]; return p?`${p[0]} → ${p[1]}`:null; }
+  const it=e.l.items[+rest]; if(!it) return null;
+  return it.t==='order'?it.en : it.t==='fill'?it.s.replace('___',it.a) : it.a;
+}
+function renderReview(){
+  const due=dueKeys(); const all=Object.keys(S.mist);
+  const anyDone=LESSONS.some(e=>S.done[e.l.id]);
+  let html=`<div class="card"><h2>Révision</h2>
+    <p>${due.length?`${due.length} point${due.length>1?'s':''} à revoir maintenant. Chaque erreur revient après 1, 3 puis 7 jours, jusqu'à ce que tu la maîtrises.`
+      : anyDone?'Rien d\'urgent. Une révision mélange des exercices des leçons déjà faites.':'Termine une première leçon : tes erreurs et le vocabulaire vu viendront ici.'}</p>
+    <p>+10 XP par révision.</p>
+    <button class="btn gold" id="revGo" ${(due.length||anyDone)?'':'disabled'}>Lancer une révision</button></div>`;
+  if(all.length){
+    html+=`<h3 class="section-h">Points à consolider (${all.length})</h3><div class="mist-list">`+
+      all.sort((a,b)=>S.mist[a].d-S.mist[b].d).slice(0,30).map(k=>{ const lab=exLabel(k); if(!lab) return '';
+        const m=S.mist[k]; const days=Math.ceil((m.d-Date.now())/DAY);
+        return `<div class="mist"><span>${esc(lab)}</span><em>${days<=0?'à revoir':'dans '+days+' j'}</em></div>`; }).join('')+`</div>`;
+  }
+  $('v-review').innerHTML=html;
+  $('revGo').onclick=()=>startLesson('review');
+}
+
+/* ---------- Claude : deux moteurs ----------
+   Dans l'Artifact claude.ai : la capacité « sample » (le compte Claude de l'utilisateur).
+   Ailleurs (GitHub Pages) : l'API Anthropic via le SDK officiel, avec la clé de l'utilisateur si elle est renseignée. */
+const SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.128.0/+esm';
+let Anthropic = null, apiClient = null, apiClientKey = '';
+const apiKey = () => { try{ return localStorage.getItem(KEY+'-apikey')||''; }catch(e){ return ''; } };
+const aiAvailable = () => !!sampleFn || !!apiKey();
+const STR = {type:'string'};
+const strList = {type:'array', items:STR};
+const obj = props => ({type:'object', properties:props, required:Object.keys(props), additionalProperties:false});
+async function askClaude(prompt, schema, fast){
+  if(sampleFn) return sampleFn.json(prompt, fast ? {cache:false, modelTier:'quick'} : {cache:false});
+  const key = apiKey(); if(!key) throw {code:'no_engine'};
+  if(!Anthropic){ try{ Anthropic = (await import(SDK_URL)).default; }catch(e){ throw {code:'sdk_load'}; } }
+  if(!apiClient || apiClientKey!==key){ apiClient = new Anthropic({apiKey:key, dangerouslyAllowBrowser:true}); apiClientKey = key; }
+  let r;
+  try{
+    r = await apiClient.beta.messages.create({
+      model:'claude-opus-5-5', max_tokens:8000,
+      betas:['server-side-fallback-2026-07-01'], fallbacks:'default',
+      output_config:{effort: fast ? 'low' : 'medium', format:{type:'json_schema', schema}},
+      messages:[{role:'user', content:prompt}],
+    });
+  }catch(e){
+    if(e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) throw {code:'bad_key'};
+    if(e instanceof Anthropic.RateLimitError) throw {code:'rate_limited'};
+    if(e instanceof Anthropic.APIConnectionError) throw {code:'offline'};
+    throw {code:'api_error'};
+  }
+  if(r.stop_reason==='refusal') throw {code:'refusal'};
+  if(r.stop_reason==='max_tokens') throw {code:'bad_output'};
+  try{ return JSON.parse(r.content.filter(b=>b.type==='text').map(b=>b.text).join('')); }catch(e){ throw {code:'bad_output'}; }
+}
+function aiErr(e){
+  const c = e && e.code;
+  return ({
+    not_granted:'Accès à Claude refusé pour cette session. Recharge la page pour réessayer.',
+    rate_limited:'Trop de demandes rapprochées. Attends une minute avant de relancer.',
+    bad_key:'La clé API est refusée. Vérifie-la dans Profil.',
+    offline:'Pas de connexion à Claude. Vérifie ta connexion internet.',
+    sdk_load:'Impossible de charger la bibliothèque Claude. Vérifie ta connexion internet.',
+    refusal:'Claude a décliné cette réplique. Reformule-la.',
+    no_engine:'Ajoute ta clé API Anthropic dans Profil pour discuter avec Claude.',
+  })[c] || 'Claude n\'a pas pu répondre. Réessaie dans un instant.';
+}
+
+/* ---------- Coach (Claude) ---------- */
+let coachSel='c1', coachBusy=false, coachResult=null, coachErr='', sampleFn=null;
+function renderCoach(){
+  const sc=COACH.find(c=>c.id===coachSel);
+  const draft=(()=>{ try{ return localStorage.getItem(KEY+'-draft-'+coachSel)||''; }catch(e){ return ''; } })();
+  let html=`<div class="card"><h2>Coach d'écriture</h2><p>Écris en anglais, Claude corrige et explique en français. +5 XP par texte corrigé.</p></div>
+    <h3 class="section-h">Choisis une situation</h3>
+    <div class="scen">${COACH.map(c=>`<button class="${c.id===coachSel?'on':''}" data-c="${c.id}"><b>${esc(c.t)}</b><span>${esc(c.d)}</span></button>`).join('')}</div>
+    <h3 class="section-h">Ton texte</h3>
+    <label for="coachText" class="sr" style="position:absolute;left:-9999px">Ton texte en anglais</label>
+    <textarea id="coachText" placeholder="Write your text in English here…">${esc(draft)}</textarea>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap"><button class="btn" id="coachGo" ${coachBusy?'disabled':''}>${coachBusy?'Correction…':'Corriger'}</button>
+    <span class="err-line">${esc(coachErr)}</span></div>
+    <div id="coachOut" style="margin-top:18px"></div>`;
+  $('v-coach').innerHTML=html;
+  $('v-coach').querySelectorAll('.scen button').forEach(b=>b.onclick=()=>{ coachSel=b.dataset.c; coachResult=null; coachErr=''; renderCoach(); });
+  $('coachText').oninput=e=>{ try{ localStorage.setItem(KEY+'-draft-'+coachSel, e.target.value); }catch(_){} };
+  $('coachGo').onclick=()=>runCoach(sc);
+  if(coachResult) drawCoach(coachResult);
+}
+const COACH_SCHEMA = obj({score:{type:'integer'}, corrected:STR, issues:{type:'array', items:obj({original:STR, fix:STR, why:STR})}, tip:STR, phrase:STR});
+async function runCoach(sc){
+  const text=$('coachText').value.trim();
+  if(text.length<15){ coachErr='Écris au moins une phrase complète.'; return renderCoach(); }
+  coachBusy=true; coachErr=''; coachResult=null; renderCoach();
+  $('coachOut').innerHTML='<p style="color:var(--ink-2)">Claude relit ton texte…</p>';
+  const prompt=`You are a business English coach for a French-speaking professional (level B1-B2).
+Task given to the learner: ${sc.task}
+Learner's text:
+"""
+${text}
+"""
+Return JSON with:
+- "score": integer 0-10 for clarity, correctness and professional tone
+- "corrected": a corrected, natural version in English, same intent and similar length
+- "issues": at most 5 objects {"original": faulty excerpt, "fix": correction, "why": short explanation IN FRENCH}, most important first; empty if the text is already correct
+- "tip": one actionable tip IN FRENCH to improve
+- "phrase": one idiomatic English phrase useful in this situation`;
+  try{
+    const r = await askClaude(prompt, COACH_SCHEMA, false);
+    if(!r || typeof r!=='object' || typeof r.corrected!=='string') throw {code:'bad_output'};
+    coachResult={score:Math.max(0,Math.min(10,Math.round(+r.score||0))), corrected:r.corrected, issues:Array.isArray(r.issues)?r.issues.slice(0,5):[], tip:String(r.tip||''), phrase:String(r.phrase||'')};
+    addXp(5); save(); renderTop();
+  }catch(e){
+    coachErr = aiErr(e);
+  }
+  coachBusy=false; renderCoach();
+}
+function drawCoach(r){
+  $('coachOut').innerHTML=`<div class="card coach-out">
+    <div class="score"><b class="num">${r.score}</b><span>/ 10</span></div>
+    <div class="corrected"><div>${esc(r.corrected)}</div>${sayBtn(r.corrected,'inline')}</div>
+    ${r.issues.map(i=>`<div class="issue"><s>${esc(i.original||'')}</s> → <ins>${esc(i.fix||'')}</ins><p>${esc(i.why||'')}</p></div>`).join('')}
+    ${r.tip?`<div class="tip"><b>Conseil :</b> ${esc(r.tip)}</div>`:''}
+    ${r.phrase?`<div class="prompt" style="margin:0">${sayBtn(r.phrase,'inline')}<div><b>À retenir :</b> ${esc(r.phrase)}</div></div>`:''}
+  </div>`;
+}
+
+/* ---------- Onglet Oral ---------- */
+let AIC = null, customTopic = '';
+const TURN_SCHEMA = obj({reply:STR, feedback:STR, better:STR, end:{type:'boolean'}});
+const SUMMARY_SCHEMA = obj({strengths:strList, improve:strList, phrases:strList});
+function oralNote(){
+  if(useMic()) return `Micro du navigateur, accent ${S.settings.accent==='en-GB'?'britannique':'américain'}. Le navigateur demande l'autorisation au premier essai.`;
+  if(FRAMED) return `Ici, tu parles avec la dictée de ton clavier : touche le champ de réponse, puis l'icône micro du clavier. Pour parler directement dans l'app, ouvre la <a href="${ONLINE_URL}" target="_blank" rel="noopener">version en ligne</a>.`;
+  if(!SRec) return 'Ce navigateur ne propose pas la reconnaissance vocale : utilise la dictée de ton clavier, ou ouvre l\'app dans Chrome ou Safari.';
+  return 'Mode dictée du clavier (modifiable dans Profil).';
+}
+function renderOral(){
+  if(AIC) return renderAIC();
+  const item = (kind,o,color,icon,count) => `<button class="oitem" data-k="${kind}" data-id="${o.id}">
+      <span class="oi" style="background:${color}">${icon}</span><div><b>${esc(o.t)}</b><span>${esc(o.d)}</span></div>
+      ${count?`<span class="ok-mark" title="Fait ${count} fois">${I.check}</span>`:''}</button>`;
+  let html = `<div class="card"><h2>À l'oral</h2><p>Discute, écoute, réponds à voix haute. Autant que tu veux.</p><p class="note">${oralNote()}</p></div>
+    <h3 class="section-h">Discussions avec Claude</h3>`;
+  if(aiAvailable()){
+    html += `<p class="sub">Claude joue ton interlocuteur et te répond à voix haute${useMic()?', puis réactive le micro tout seul : tu parles comme au téléphone':''}. Il corrige tes répliques et fait un bilan à la fin.</p>
+      <div class="olist">${AI_SCEN.map(o=>item('ai',o,'#7A55C9',I.coach,0)).join('')}
+      <div class="oitem custom"><span class="oi" style="background:#7A55C9">${I.coach}</span><div class="custom-in">
+        <label for="topicIn"><b>Sujet de ton choix</b></label>
+        <div class="custom-row"><input id="topicIn" type="text" placeholder="Ex. : mes vacances, le rugby, l'IA…" value="${esc(customTopic)}"><button class="btn small" id="topicGo">Discuter</button></div>
+      </div></div></div>`;
+  } else {
+    html += `<div class="card"><p>Pour discuter avec Claude ici, ajoute ta clé API Anthropic dans Profil. Elle reste dans ce navigateur, et chaque discussion coûte quelques centimes sur ton compte Anthropic.</p>
+      <p>Sans clé, les discussions marchent dans la version claude.ai de l'app.</p><button class="btn small" id="toProfile">Ajouter ma clé</button></div>`;
+  }
+  html += `<h3 class="section-h">Dialogues guidés</h3><p class="sub">Une situation, cinq répliques. On te dit quoi exprimer, tu le dis en anglais.</p>
+    <div class="olist">${DIALOGS.map(o=>item('dialog',o,o.color,I.mic,S.oral.d[o.id])).join('')}</div>
+    <h3 class="section-h">Prononciation</h3><p class="sub">Les sons et les mots qui trahissent l'accent français.</p>
+    <div class="olist">${PRONUN.map(o=>item('pron',o,'#2E7FB8',I.speaker,S.oral.p[o.id])).join('')}</div>`;
+  $('v-oral').innerHTML = html;
+  $('v-oral').querySelectorAll('button.oitem').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k, id=b.dataset.id;
+    if(k==='ai') startAIC(AI_SCEN.find(x=>x.id===id)); else startLesson(k, id);
+  });
+  if($('toProfile')) $('toProfile').onclick = () => setView('profile');
+  if($('topicIn')){
+    $('topicIn').oninput = e => { customTopic = e.target.value; };
+    const go = () => { const t=customTopic.trim(); if(!t) return $('topicIn').focus();
+      startAIC({id:'custom', t:'Sujet : '+t, d:'Discussion libre sur le sujet que tu as choisi.',
+        role:`a friendly, curious English-speaking conversation partner. The learner chose this topic (it may be written in French): "${t}". Talk about it naturally, share your own views and ask about theirs.`,
+        opener:'Sounds like a great topic! So, tell me, what do you think about it?'}); };
+    $('topicGo').onclick = go;
+    $('topicIn').onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); go(); } };
+  }
+}
+function startAIC(sc){
+  AIC = {sc, turns:[{who:'them', text:sc.opener}], busy:false, ended:false, summary:null, err:'', hide:false, xp:0};
+  renderAIC(); window.scrollTo(0,0); themSays(sc.opener);
+}
+/* Claude parle ; en mains libres, le micro se rouvre quand il a fini. */
+function themSays(text){
+  const a = AIC;
+  speak(text, null, () => {
+    if(AIC!==a || a.ended || a.busy || currentView!=='oral' || lessonOpen) return;
+    if(useMic() && S.settings.handsFree){ const m=document.querySelector('#aicIn .mic'); if(m && !m.classList.contains('live')) m.click(); }
+  });
+}
+const scrollEnd = () => window.scrollTo(0, document.documentElement.scrollHeight);
+function lastThem(){ const t=[...AIC.turns].reverse().find(x=>x.who==='them'); return t ? t.text : ''; }
+function renderAIC(){
+  const a = AIC;
+  const fix = S.settings.liveFix;
+  let html = `<div class="aic-bar"><button class="btn small ghost" id="aicQuit">Quitter</button>
+      <div class="aic-opts">
+        ${useMic()?`<label class="mini-tog"><input type="checkbox" id="aicHands" ${S.settings.handsFree?'checked':''}> Mains libres</label>`:''}
+        <label class="mini-tog"><input type="checkbox" id="aicFix" ${fix?'checked':''}> Corriger en direct</label>
+        <label class="mini-tog"><input type="checkbox" id="aicHide" ${a.hide?'checked':''}> Masquer son texte</label>
+      </div></div>
+    <div class="card aic-head"><h2>${esc(a.sc.t)}</h2><p>${esc(a.sc.d)}</p></div><div class="chat">`;
+  a.turns.forEach(t=>{
+    if(t.who==='them'){ html += chatMsg('them', t.text, a.hide); return; }
+    html += chatMsg('me', t.text);
+    if(fix && (t.feedback || t.better)) html += `<div class="fbk">${t.feedback?`<div>${esc(t.feedback)}</div>`:''}
+      ${t.better?`<div class="fbk-better">${sayBtn(t.better,'inline')}<span><b>Plus naturel :</b> ${esc(t.better)}</span></div>`:''}</div>`;
+  });
+  if(a.busy) html += `<div class="msg them"><div>…</div></div>`;
+  html += '</div>';
+  if(!a.ended){
+    const n = a.turns.filter(t=>t.who==='me').length;
+    html += `${a.busy?'':`<div class="replay"><button class="btn small ghost" id="rpt">Répéter</button><button class="btn small ghost" id="slow">Plus lentement</button></div><div id="aicIn"></div>`}
+      <div class="aic-actions"><button class="btn small" id="aicSend" hidden>Envoyer</button>
+      <button class="btn small ghost" id="aicEnd" ${n&&!a.busy?'':'disabled'}>Terminer et voir le bilan</button></div>
+      ${a.suggestEnd?'<p class="sub">La discussion arrive à sa fin : tu peux voir ton bilan, ou continuer.</p>':''}`;
+  } else if(!a.summary){
+    html += `<p class="sub">Claude prépare ton bilan…</p>`;
+  } else {
+    const list = (title, arr) => arr.length ? `<div><b>${title}</b><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+    const fixes = a.turns.filter(t=>t.who==='me' && t.better && norm(t.better).replace(/[^a-z0-9 ]/g,'')!==norm(t.text).replace(/[^a-z0-9 ]/g,''));
+    html += `<div class="card coach-out"><h2>Bilan · +${a.xp} XP</h2>${list('Points forts', a.summary.strengths)}${list('À travailler', a.summary.improve)}
+      ${a.summary.phrases.length?`<div><b>Tournures à retenir</b>${a.summary.phrases.map(p=>`<div class="fbk-better">${sayBtn(p,'inline')}<span>${esc(p)}</span></div>`).join('')}</div>`:''}
+      ${fixes.length?`<div><b>Tes répliques, en plus naturel</b>${fixes.map(t=>`<div class="issue"><s>${esc(t.text)}</s><div class="fbk-better">${sayBtn(t.better,'inline')}<ins>${esc(t.better)}</ins></div></div>`).join('')}</div>`:''}</div>
+      <div class="aic-actions"><button class="btn" id="aicAgain">Nouvelle discussion</button><button class="btn ghost" id="aicSame">Recommencer ce sujet</button></div>`;
+  }
+  if(a.err) html += `<p class="err-line">${esc(a.err)}</p>`;
+  $('v-oral').innerHTML = html;
+  $('aicQuit').onclick = () => { stopRec(); try{ speechSynthesis.cancel(); }catch(e){} AIC=null; renderOral(); };
+  $('aicHide').onchange = e => { a.hide=e.target.checked; renderAIC(); };
+  $('aicFix').onchange = e => { S.settings.liveFix=e.target.checked; save(); renderAIC(); };
+  if($('aicHands')) $('aicHands').onchange = e => { S.settings.handsFree=e.target.checked; save(); };
+  if($('rpt')) $('rpt').onclick = () => themSays(lastThem());
+  if($('slow')) $('slow').onclick = () => speak(lastThem(), 0.7);
+  if($('aicAgain')) $('aicAgain').onclick = () => { AIC=null; renderOral(); window.scrollTo(0,0); };
+  if($('aicSame')) $('aicSame').onclick = () => startAIC(a.sc);
+  if($('aicEnd')) $('aicEnd').onclick = aicEnd;
+  if($('aicIn')){
+    const ctl = speakInput($('aicIn'), alts=>aicSend(alts[0]));
+    if(ctl.typed){ $('aicSend').hidden=false; $('aicSend').onclick=()=>{ const v=ctl.value(); if(v) aicSend(v); }; }
+  }
+}
+async function aicSend(text){
+  const a = AIC; if(!a || a.busy || a.ended) return;
+  a.turns.push({who:'me', text}); a.busy=true; a.err=''; renderAIC(); scrollEnd();
+  const transcript = a.turns.map(t=>(t.who==='them'?'Partner':'Learner')+': '+t.text).join('\n');
+  const prompt = `You are the conversation partner in a spoken English practice session.
+Your role: ${a.sc.role}
+The learner is a French-speaking professional (level B1-B2) who wants to get comfortable speaking English. Their lines come from speech recognition or phone dictation, so ignore punctuation, capitalisation and obvious transcription glitches.
+Conversation so far:
+${transcript}
+Return JSON with:
+- "reply": your next line, in role. Natural spoken English, 1 or 2 short sentences, usually ending with a question so the learner keeps talking.
+- "feedback": in French, one short sentence about the learner's LAST line: the main mistake, or a brief compliment if it was natural.
+- "better": a more natural way to say the learner's last line in spoken English (repeat it unchanged if it was already natural).
+- "end": true only when the conversation has reached a natural conclusion.`;
+  try{
+    const r = await askClaude(prompt, TURN_SCHEMA, true);
+    if(!r || typeof r.reply!=='string') throw {code:'bad_output'};
+    const me = a.turns[a.turns.length-1]; me.feedback=String(r.feedback||''); me.better=String(r.better||'');
+    a.turns.push({who:'them', text:r.reply}); a.suggestEnd = !!r.end;
+    a.busy=false;
+    if(AIC===a && currentView==='oral'){ renderAIC(); scrollEnd(); }
+    themSays(r.reply);
+    return;
+  }catch(e){ a.turns.pop(); a.err = aiErr(e); }
+  a.busy=false;
+  if(AIC===a && currentView==='oral'){ renderAIC(); scrollEnd(); }
+}
+async function aicEnd(){
+  const a = AIC; if(!a || a.busy) return;
+  stopRec(); try{ speechSynthesis.cancel(); }catch(e){}
+  a.ended=true; a.err='';
+  const n = a.turns.filter(t=>t.who==='me').length;
+  a.xp = Math.min(30, 3*n); addXp(a.xp); S.oral.ai=(S.oral.ai||0)+1; save(); renderTop();
+  renderAIC(); scrollEnd();
+  const transcript = a.turns.map(t=>(t.who==='them'?'Partner':'Learner')+': '+t.text).join('\n');
+  const arr = v => Array.isArray(v) ? v.map(String).slice(0,3) : [];
+  try{
+    const r = await askClaude(`You coach a French-speaking professional on spoken English (B1-B2). Here is a conversation they just had (their lines come from speech recognition):
+${transcript}
+Return JSON with "strengths" (up to 3 short points IN FRENCH), "improve" (up to 3 short, concrete points IN FRENCH) and "phrases" (up to 3 natural English phrases they could reuse in this kind of conversation).`, SUMMARY_SCHEMA, false);
+    a.summary = {strengths:arr(r&&r.strengths), improve:arr(r&&r.improve), phrases:arr(r&&r.phrases)};
+  }catch(e){ a.summary = {strengths:[], improve:[], phrases:[]}; a.err = aiErr(e); }
+  if(AIC===a && currentView==='oral'){ renderAIC(); scrollEnd(); }
+}
+
+/* ---------- Profil ---------- */
+function renderProfile(){
+  const acc = S.stats.answered ? Math.round(S.stats.correct/S.stats.answered*100) : 0;
+  const nDone = Object.keys(S.done).length;
+  const days=[...Array(7)].map((_,i)=>{ const d=new Date(Date.now()-(6-i)*DAY); return {k:dkey(d), l:'DLMMJVS'[d.getDay()]}; });
+  const max=Math.max(S.settings.goal, ...days.map(d=>S.days[d.k]||0));
+  const seg=(id,vals,cur,fmt)=>`<div class="seg" id="${id}">${vals.map(v=>`<button data-v="${v}" class="${String(v)===String(cur)?'on':''}">${fmt?fmt(v):v}</button>`).join('')}</div>`;
+  const tog=(id,label,sub,val)=>`<div class="toggle"><label for="${id}" style="margin:0;font-weight:700">${label}<small>${sub}</small></label><input type="checkbox" id="${id}" ${val?'checked':''}></div>`;
+  $('v-profile').innerHTML=`
+    <div class="stats">
+      <div class="st" style="color:var(--gold)">${I.flame}<div><b class="num">${streakNow()}</b><span>jours de série</span></div></div>
+      <div class="st" style="color:var(--primary)">${I.bolt}<div><b class="num">${S.xp}</b><span>XP au total</span></div></div>
+      <div class="st" style="color:var(--ok)">${I.check}<div><b class="num">${nDone} / ${LESSONS.length}</b><span>leçons terminées</span></div></div>
+      <div class="st" style="color:var(--heart)">${I.target}<div><b class="num">${acc}%</b><span>de bonnes réponses</span></div></div>
+    </div>
+    <h3 class="section-h">7 derniers jours</h3>
+    <div class="card"><div class="week">${days.map((d,i)=>{ const v=S.days[d.k]||0; return `<div class="wk${v>=S.settings.goal?' goal':''}${i===6?' is-today':''}">
+      <div class="col"><i style="height:${Math.round(v/max*100)}%"></i></div><b class="num" style="font-size:12px">${v}</b><span>${d.l}</span></div>`; }).join('')}</div>
+      <p style="font-size:13px">Barres dorées : objectif atteint (${S.settings.goal} XP).</p></div>
+    <h3 class="section-h">Réglages</h3>
+    <div class="card set">
+      <div><label>Objectif quotidien</label>${seg('sGoal',[10,20,30,50],S.settings.goal,v=>v+' XP')}</div>
+      ${canSpeak?`<div><label>Accent de la voix</label>${seg('sAccent',['en-GB','en-US'],S.settings.accent,v=>v==='en-GB'?'Britannique':'Américain')}</div>
+      <div><label>Vitesse de lecture</label>${seg('sRate',[0.8,0.95,1.1],S.settings.rate,v=>({0.8:'Lente',0.95:'Normale',1.1:'Rapide'})[v])}</div>
+      ${tog('sAuto','Lire les réponses à voix haute','Après chaque vérification',S.settings.autoread)}`:''}
+      ${tog('sSpeakL','Exercices oraux dans les leçons','Lire à voix haute et traduire à l\'oral',S.settings.speakInLessons)}
+      ${micPossible?`<div><label>Pour répondre à l'oral</label>${seg('sInput',['mic','type'],S.settings.input,v=>v==='mic'?'Micro du navigateur':'Dictée du clavier')}</div>`:''}
+      ${tog('sSound','Effets sonores','Bonne et mauvaise réponse',S.settings.sound)}
+      ${sampleFn?'':`<div><label for="sKey">Clé API Anthropic (discussions et coach)</label>
+        <div class="custom-row"><input id="sKey" type="password" autocomplete="off" spellcheck="false" placeholder="${apiKey()?'Clé enregistrée':'sk-ant-…'}"><button class="btn small" id="sKeySave">Enregistrer</button></div>
+        <span class="hint2">${apiKey()?'Une clé est enregistrée dans ce navigateur. <button class="linkbtn" id="sKeyDel">Supprimer la clé</button>'
+          :'Facultatif. Crée une clé sur console.anthropic.com. Elle reste dans ce navigateur et sert seulement à appeler Claude. Chaque discussion coûte quelques centimes sur ton compte Anthropic.'}</span></div>`}
+      <div class="sync-note ${cloudRef?'cloud':''}"><i></i>${cloudRef?'Progression enregistrée sur ton compte Claude, retrouvée sur tous tes appareils.':'Progression enregistrée dans ce navigateur.'}</div>
+      <div><button class="linkbtn" id="sReset">Remettre la progression à zéro</button></div>
+    </div>`;
+  const bindSeg=(id,key,cast)=>$(id)&&$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{ S.settings[key]=cast(b.dataset.v); save(); renderProfile(); renderTop();
+    if(key==='accent'||key==='rate') speak('Nice to meet you.'); });
+  bindSeg('sGoal','goal',Number); bindSeg('sAccent','accent',String); bindSeg('sRate','rate',Number); bindSeg('sInput','input',String);
+  const bindTog=(id,key)=>$(id)&&($(id).onchange=e=>{ S.settings[key]=e.target.checked; save(); renderTop(); });
+  bindTog('sAuto','autoread'); bindTog('sSpeakL','speakInLessons'); bindTog('sSound','sound');
+  if($('sKeySave')) $('sKeySave').onclick=()=>{ const v=$('sKey').value.trim(); if(!v) return $('sKey').focus();
+    try{ localStorage.setItem(KEY+'-apikey', v); }catch(e){} renderAll(); };
+  if($('sKeyDel')) $('sKeyDel').onclick=()=>{ try{ localStorage.removeItem(KEY+'-apikey'); }catch(e){} apiClient=null; renderAll(); };
+  $('sReset').onclick=()=>{
+    openSheet(`<div class="eyebrow">Réinitialiser</div><h3>Tout effacer ?</h3><p>XP, série, leçons terminées et points à revoir seront supprimés. Tes réglages sont conservés.</p>
+      <div class="row"><button class="btn ko" id="shYes">Effacer ma progression</button><button class="btn ghost" id="shNo">Annuler</button></div>`);
+    $('shNo').onclick=closeSheet;
+    $('shYes').onclick=()=>{ const keep=S.settings; S=defaults(); S.settings=keep; save(); closeSheet(); renderAll(); };
+  };
+}
+
+/* =====================================================================
+   DÉMARRAGE
+   ===================================================================== */
+try{ const v=localStorage.getItem(KEY+'-view'); if(v && ['path','oral','review','profile'].includes(v)) currentView=v; }catch(e){}
+['path','oral','review','coach','profile'].forEach(x=>$('v-'+x).hidden = x!==currentView);
+renderAll();
+setInterval(()=>{ if(!lessonOpen) renderTop(); }, 60000);
+initCloud();
+(async()=>{
+  try{
+    if(!window.claude || typeof window.claude.use!=='function') return;
+    const s = await claude.use('sample');
+    if(s){ sampleFn=s; if(!lessonOpen) renderAll(); }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
